@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vfs xmlns="http://ws.apache.org/ns/synapse"><operation value="copy" /><sourceDirectory value="tmp://bar" /><targetDirectory value="tmp://blaa" /><lockEnabled value="false"/></vfs>

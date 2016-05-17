@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<proxy xmlns="http://ws.apache.org/ns/synapse"
+    name="VfsTestProxy" statistics="disable"
+    trace="disable" transports="https,http">
+    <target>
+        <inSequence>
+            <vfs>
+                <operation value="copy"/>
+                <targetDirectory value="tmp://blaa"/>
+                <filePattern value=".*.xml"/>
+            </vfs>
+        </inSequence>
+    </target>
+</proxy>
