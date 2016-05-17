@@ -25,10 +25,18 @@ These options are not specified in mediator configuration as they are applicable
 
 ## Usage
 
-### 1. Install the mediator to the ESB
+### 1. Get the WSO2 ESB Vfs Mediator jar
+
+You have two options:
+
+a) Add as a Maven/Gradle/Ivy dependency to your project. Get the dependency snippet from [here](https://bintray.com/mystes/maven/wso2-esb-vfs-mediator/view).
+
+b) Download it manually from [here](https://github.com/Mystes/wso2-esb-vfs-mediator/releases/tag/release-1.0).
+
+### 2. Install the mediator to the ESB
 Copy the `VfsMediator-x.y.jar` to `$WSO2_ESB_HOME/repository/components/dropins/`.
 
-### 2. Use it
+### 3. Use it
 
 ```xml
 <vfs xmlns="http://ws.apache.org/ns/synapse">
