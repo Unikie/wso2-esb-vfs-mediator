@@ -59,9 +59,15 @@ There are more examples under src/test/resources directory.
 
 ## Technical Requirements
 
+#### Usage
+
 * Oracle Java 6 & 7
 * WSO2 ESB
-    * Vfs mediator has been tested with WSO2 ESB versions 4.7.0 & 4.8.1  
+    * Vfs mediator has been tested with WSO2 ESB versions 4.7.0 & 4.8.1
+
+#### Development
+
+* All above + Maven 3.0.X
 
 ## [License](LICENSE)
 
