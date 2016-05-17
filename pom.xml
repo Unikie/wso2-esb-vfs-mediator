@@ -4,7 +4,7 @@
         xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <modelVersion>4.0.0</modelVersion>
     <groupId>fi.mystes.synapse.mediator</groupId>
-    <artifactId>VfsMediator</artifactId>
+    <artifactId>wso2-esb-vfs-mediator</artifactId>
     <version>1.0</version>
     <packaging>bundle</packaging>
     <name>WSO2 ESB Vfs Mediator</name>
