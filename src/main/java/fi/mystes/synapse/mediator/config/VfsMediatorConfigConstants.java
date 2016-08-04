@@ -31,4 +31,7 @@ public class VfsMediatorConfigConstants {
     public static final QName ATT_FILE_PATTERN = new QName(NAMESPACE_STRING, "filePattern");
     public static final QName ATT_CREATE_MISSING_DIRECTORY = new QName(NAMESPACE_STRING, "createMissingDirectories");
     public static final QName ATT_LOCK_ENABLED = new QName(NAMESPACE_STRING, "lockEnabled");
+    public static final QName ATT_STREAMING_TRANSFER = new QName(NAMESPACE_STRING, "streamingTransfer");
+    public static final QName ATT_STREAMING_BLOCK_SIZE = new QName(NAMESPACE_STRING, "streamingBlockSize");
+
 }

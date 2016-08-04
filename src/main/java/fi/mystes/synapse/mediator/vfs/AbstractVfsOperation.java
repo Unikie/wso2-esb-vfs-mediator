@@ -28,7 +28,9 @@ public abstract class AbstractVfsOperation implements VfsOperation {
     private String targetDirectory;
     private String archiveDirectory;
     private String filePattern;
+    private String streamingBlockSize;
     private boolean createMissingDirectories;
+    private boolean streamingTransfer;
     private boolean lockEnabled;
     private boolean ftpPassiveMode;
 
@@ -89,6 +91,22 @@ public abstract class AbstractVfsOperation implements VfsOperation {
     }
 
     /**
+     * Setter for streaming transfer boolean flag.
+     */
+    @Override
+    public void setStreamingTransfer(boolean streamingTransfer) {
+        this.streamingTransfer = streamingTransfer;
+    }
+
+    /**
+     * Setter for streaming block size.
+     */
+    @Override
+    public void setStreamingBlockSize(String streamingBlockSize) {
+        this.streamingBlockSize = streamingBlockSize;
+    }
+
+    /**
      * Method to execute the VFS operation (copy/move/other).
      */
     @Override
@@ -143,6 +161,7 @@ public abstract class AbstractVfsOperation implements VfsOperation {
         return VfsOperationOptions.with().sourceDirectory(sourceDirectory).targetDirectory(targetDirectory)
                 .filePatternRegex(filePattern).archiveDirectory(archiveDirectory)
                 .createMissingDirectories(createMissingDirectories).lockEnabled(lockEnabled)
-                .ftpPassiveModeEnabled(ftpPassiveMode).build();
+                .ftpPassiveModeEnabled(ftpPassiveMode).streamingTransferEnabled(streamingTransfer)
+                .streamingBlockSize(streamingBlockSize).build();
     }
 }

@@ -74,6 +74,10 @@ public class VfsMediatorFactory extends AbstractMediatorFactory {
 
         handleLockEnabledElement(omElement, mediator);
 
+        handleStreamingTransferElement(omElement, mediator);
+
+        handleStreamingBlockSizeElement(omElement, mediator);
+
         return mediator;
     }
 
@@ -248,6 +252,66 @@ public class VfsMediatorFactory extends AbstractMediatorFactory {
             } else {
                 String value = archiveDirectoryElement.getAttributeValue(ATT_VALUE);
                 mediator.setArchiveDirectoryValue(value);
+            }
+        }
+    }
+
+    /**
+     * Retrieves 'streamingTransfer' element from given OMElement and sets it to
+     * given mediator.
+     *
+     * @param omElement
+     *            To read 'streamingTransfer' element from
+     * @param mediator
+     *            To set 'streamingTransfer' (transfer is made by streaming in blocks) value
+     *            to
+     */
+    private void handleStreamingTransferElement(OMElement omElement, VfsMediator mediator) {
+        OMElement streamingTransferElement = omElement
+                .getFirstChildWithName(VfsMediatorConfigConstants.ATT_STREAMING_TRANSFER);
+        if (streamingTransferElement != null) {
+            if (streamingTransferElement.getAttributeValue(ATT_EXPRN) != null) {
+                try {
+                    mediator.setStreamingTransferXpath(
+                            SynapseXPathFactory.getSynapseXPath(streamingTransferElement, ATT_EXPRN));
+                } catch (JaxenException e) {
+                    handleException(MessageFormat.format(
+                            "An invalid xPath expression has been given to a VfsMediator [{0}] element",
+                            VfsMediatorConfigConstants.ATT_STREAMING_TRANSFER), e);
+                }
+            } else {
+                String value = streamingTransferElement.getAttributeValue(ATT_VALUE);
+                mediator.setStreamingTransferValue(Boolean.valueOf(value));
+            }
+        }
+    }
+
+    /**
+     * Retrieves 'streamingBlockSize' element from given OMElement and sets it to
+     * given mediator.
+     *
+     * @param omElement
+     *            To read 'streamingBlockSize' element from
+     * @param mediator
+     *            To set 'streamingBlockSize' (transfer is made in specified blockSize) value
+     *            to
+     */
+    private void handleStreamingBlockSizeElement(OMElement omElement, VfsMediator mediator) {
+        OMElement streamingBlockSizeElement = omElement
+                .getFirstChildWithName(VfsMediatorConfigConstants.ATT_STREAMING_BLOCK_SIZE);
+        if (streamingBlockSizeElement != null) {
+            if (streamingBlockSizeElement.getAttributeValue(ATT_EXPRN) != null) {
+                try {
+                    mediator.setStreamingBlockSizeXpath(
+                            SynapseXPathFactory.getSynapseXPath(streamingBlockSizeElement, ATT_EXPRN));
+                } catch (JaxenException e) {
+                    handleException(MessageFormat.format(
+                            "An invalid xPath expression has been given to a VfsMediator [{0}] element",
+                            VfsMediatorConfigConstants.ATT_STREAMING_BLOCK_SIZE), e);
+                }
+            } else {
+                String value = streamingBlockSizeElement.getAttributeValue(ATT_VALUE);
+                mediator.setStreamingBlockSizeValue(value);
             }
         }
     }

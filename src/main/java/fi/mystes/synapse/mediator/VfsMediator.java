@@ -48,6 +48,8 @@ public class VfsMediator extends AbstractMediator {
     private String filePatternValue;
     private boolean createMissingDirectoriesValue;
     private Boolean lockEnabledValue;
+    private boolean streamingTransferValue;
+    private String streamingBlockSizeValue;
 
     private SynapseXPath filePatternXpath;
     private SynapseXPath operationXpath;
@@ -56,6 +58,8 @@ public class VfsMediator extends AbstractMediator {
     private SynapseXPath archiveDirectoryXpath;
     private SynapseXPath createMissingDirectoriesXpath;
     private SynapseXPath lockEnabledXpath;
+    private SynapseXPath streamingTransferXpath;
+    private SynapseXPath streamingBlockSizeXpath;
     private final static String FILE_COUNT_PROPERTY_NAME = "vfs.fileCount";
     static final String FTP_PASSIVE_MODE_PROPERTY_NAME = "vfs.ftp.passiveMode";
 
@@ -337,9 +341,89 @@ public class VfsMediator extends AbstractMediator {
     }
 
     /**
+     * Setter for boolean flag indicating whether to use streaming for file transfer.
+     *
+     * @param streamingTransferValue
+     *            True to use lock file, otherwise false
+     */
+    public void setStreamingTransferValue(boolean streamingTransferValue) {
+        this.streamingTransferValue = streamingTransferValue;
+    }
+
+    /**
+     * Getter for boolean flag indicating whether to use streaming for
+     * file transfer.
+     * 
+     * @return
+     */
+    public Boolean getStreamingTransferValue() {
+        return streamingTransferValue;
+    }
+
+    /**
+     * Setter for streaming transfer XPath. SynapseXPath possibles reading value either
+     * 'expression' or 'value' attributes.
+     * 
+     * @param xpath
+     */
+    public void setStreamingTransferXpath(SynapseXPath xpath) {
+        this.streamingTransferXpath = xpath;
+    }
+
+    /**
+     * Getter for streaming transfer XPath. SynapseXPath possibles reading value
+     * either 'expression' or 'value' attributes.
+     * 
+     * @return
+     */
+    public SynapseXPath getStreamingTransferXpath() {
+        return this.streamingTransferXpath;
+    }
+
+    /**
+     * Setter for String indicating block size the streaming file transfer uses.
+     *
+     * @param streamingBlockSizeValue
+     *            True to use lock file, otherwise false
+     */
+    public void setStreamingBlockSizeValue(String streamingBlockSizeValue) {
+        this.streamingBlockSizeValue = streamingBlockSizeValue;
+    }
+
+    /**
+     * Getter for string indicating block size for streaming
+     * file transfer.
+     *
+     * @return
+     */
+    public String getStreamingBlockSizeValue() {
+        return streamingBlockSizeValue;
+    }
+
+    /**
+     * Setter for streaming block size XPath. SynapseXPath possibles reading value either
+     * 'expression' or 'value' attributes.
+     *
+     * @param xpath
+     */
+    public void setStreamingBlockSizeXpath(SynapseXPath xpath) {
+        this.streamingBlockSizeXpath = xpath;
+    }
+
+    /**
+     * Getter for streaming block size XPath. SynapseXPath possibles reading value
+     * either 'expression' or 'value' attributes.
+     *
+     * @return
+     */
+    public SynapseXPath getStreamingBlockSizeXpath() {
+        return this.streamingBlockSizeXpath;
+    }
+
+    /**
      * Setter for boolean flag indicating whether to use lock file for
      * multithread orchestration.
-     * 
+     *
      * @param lockEnabledValue
      *            True to use lock file, otherwise false
      */
@@ -350,7 +434,7 @@ public class VfsMediator extends AbstractMediator {
     /**
      * Getter for boolean flag indicating whether to use lock file for
      * multithreading.
-     * 
+     *
      * @return
      */
     public Boolean getLockEnabledValue() {
@@ -360,7 +444,7 @@ public class VfsMediator extends AbstractMediator {
     /**
      * Setter for lock enable XPath. SynapseXPath possibles reading value either
      * 'expression' or 'value' attributes.
-     * 
+     *
      * @param xpath
      */
     public void setLockEnabledXpath(SynapseXPath xpath) {
@@ -370,7 +454,7 @@ public class VfsMediator extends AbstractMediator {
     /**
      * Getter for lock enabled XPath. SynapseXPath possibles reading value
      * either 'expression' or 'value' attributes.
-     * 
+     *
      * @return
      */
     public SynapseXPath getLockEnabledXpath() {
@@ -404,6 +488,8 @@ public class VfsMediator extends AbstractMediator {
         op.setArchiveDirectory(resolveArchiveDirectory(messageContext));
         op.setCreateMissingDirectories(resolveCreateMissingDirectories(messageContext));
         op.setLockEnabled(resolveLockEnabled(messageContext));
+        op.setStreamingTransfer(resolveStreamingTransfer(messageContext));
+        op.setStreamingBlockSize(resolveStreamingBlockSize(messageContext));
         boolean ftpPassiveMode = isFtpPassiveModeEnabled(messageContext);
         op.setFtpPassiveMode(ftpPassiveMode);
 
@@ -510,6 +596,36 @@ public class VfsMediator extends AbstractMediator {
             return Boolean.valueOf(resolvePayloadValue(createMissingDirectoriesXpath, messageContext));
         }
         return createMissingDirectoriesValue;
+    }
+
+    /**
+     * Helper method indicating whether create missing directories flag is
+     * true/false.
+     *
+     * @param messageContext
+     *            Contains create missing directories data
+     * @return Resolved boolean value indicating whether to create missing
+     *         directories
+     */
+    private boolean resolveStreamingTransfer(MessageContext messageContext) {
+        if (streamingTransferXpath != null) {
+            return Boolean.valueOf(resolvePayloadValue(streamingTransferXpath, messageContext));
+        }
+        return streamingTransferValue;
+    }
+
+    /**
+     * Helper method to resolve streaming block size.
+     *
+     * @param messageContext
+     *            Contains streaming block size data
+     * @return Resolved streaming block size
+     */
+    private String resolveStreamingBlockSize(MessageContext messageContext) {
+        if (streamingBlockSizeXpath != null) {
+            return resolvePayloadValue(getStreamingBlockSizeXpath(), messageContext);
+        }
+        return getStreamingBlockSizeValue();
     }
 
     /**

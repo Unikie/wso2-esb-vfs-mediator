@@ -90,10 +90,27 @@ public interface VfsOperation {
     void setLockEnabled(boolean lockEnabled);
 
     /**
-     * Sets FTP passive mode flag.
+     * Sets streaming transfer flag.
      * 
+     * @param streamingTransfer
+     *            True to use passive mode, false to use active mode
+     */
+    void setStreamingTransfer(boolean streamingTransfer);
+
+    /**
+     * Sets streaming block size.
+     *
+     * @param streamingBlockSize
+     *            True to use passive mode, false to use active mode
+     */
+    void setStreamingBlockSize(String streamingBlockSize);
+
+    /**
+     * Sets FTP passive mode flag.
+     *
      * @param ftpPassiveMode
      *            True to use passive mode, false to use active mode
      */
     void setFtpPassiveMode(boolean ftpPassiveMode);
+
 }

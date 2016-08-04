@@ -24,9 +24,11 @@ public final class VfsOperationOptions {
     private final String targetDirectory;
     private final String filePatternRegex;
     private final String archiveDirectory;
+    private final String streamingBlockSize;
     private final boolean createMissingDirectories;
     private final boolean lockEnabled;
     private final boolean ftpPassiveMode;
+    private final boolean streamingTransfer;
 
     /**
      * Class constructor.
@@ -47,9 +49,14 @@ public final class VfsOperationOptions {
      * @param ftpPassiveMode
      *            Boolean flag indicating whether FTP operation should be in
      *            passive mode
+     * @param streamingTransfer
+     *            Boolean flag indicating whether file transfer use streaming
+     * @param streamingBlockSize
+     *            Block size used with streaming transfer
      */
     public VfsOperationOptions(String sourceDirectory, String targetDirectory, String filePatternRegex,
-            String archiveDirectory, boolean createMissingDirectories, boolean lockEnabled, boolean ftpPassiveMode) {
+            String archiveDirectory, boolean createMissingDirectories, boolean lockEnabled, boolean ftpPassiveMode,
+            boolean streamingTransfer, String streamingBlockSize) {
         this.sourceDirectory = sourceDirectory;
         this.targetDirectory = targetDirectory;
         this.filePatternRegex = filePatternRegex;
@@ -57,6 +64,8 @@ public final class VfsOperationOptions {
         this.createMissingDirectories = createMissingDirectories;
         this.lockEnabled = lockEnabled;
         this.ftpPassiveMode = ftpPassiveMode;
+        this.streamingTransfer = streamingTransfer;
+        this.streamingBlockSize = streamingBlockSize;
     }
 
     /**
@@ -97,6 +106,15 @@ public final class VfsOperationOptions {
     }
 
     /**
+     * Returns streaming block size.
+     *
+     * @return
+     */
+    public String getStreamingBlockSize() {
+        return streamingBlockSize;
+    }
+
+    /**
      * Returns boolean flag indicating whether to create missing directories.
      * 
      * @return True/false whether to create missing directories
@@ -123,6 +141,15 @@ public final class VfsOperationOptions {
      */
     public boolean isFtpPassiveModeEnabled() {
         return ftpPassiveMode;
+    }
+
+    /**
+     * Returns boolean flag indicating whether to use streaming for file transfers.
+     *
+     * @return True/false whether to use streaming for file transfers
+     */
+    public boolean isStreamingTransferEnabled() {
+        return streamingTransfer;
     }
 
     /**
@@ -154,11 +181,15 @@ public final class VfsOperationOptions {
             return false;
         if (ftpPassiveMode != that.ftpPassiveMode)
             return false;
+        if (streamingTransfer != that.streamingTransfer)
+            return false;
         if (sourceDirectory != null ? !sourceDirectory.equals(that.sourceDirectory) : that.sourceDirectory != null)
             return false;
         if (targetDirectory != null ? !targetDirectory.equals(that.targetDirectory) : that.targetDirectory != null)
             return false;
         if (filePatternRegex != null ? !filePatternRegex.equals(that.filePatternRegex) : that.filePatternRegex != null)
+            return false;
+        if (streamingBlockSize != null ? !streamingBlockSize.equals(that.streamingBlockSize) : that.streamingBlockSize != null)
             return false;
         return !(archiveDirectory != null ? !archiveDirectory.equals(that.archiveDirectory)
                 : that.archiveDirectory != null);
@@ -176,9 +207,11 @@ public final class VfsOperationOptions {
         result = 31 * result + (targetDirectory != null ? targetDirectory.hashCode() : 0);
         result = 31 * result + (filePatternRegex != null ? filePatternRegex.hashCode() : 0);
         result = 31 * result + (archiveDirectory != null ? archiveDirectory.hashCode() : 0);
+        result = 31 * result + (streamingBlockSize != null ? streamingBlockSize.hashCode() : 0);
         result = 31 * result + (createMissingDirectories ? 1 : 0);
         result = 31 * result + (lockEnabled ? 1 : 0);
         result = 31 * result + (ftpPassiveMode ? 1 : 0);
+        result = 31 * result + (streamingTransfer ? 1 : 0);
         return result;
     }
 
@@ -259,6 +292,25 @@ public final class VfsOperationOptions {
          * @return This builder instance
          */
         Builder ftpPassiveModeEnabled(boolean ftpPassiveMode);
+
+        /**
+         * Setter for boolean flag whether to use streaming for file transfer.
+         *
+         * @param streamingTransfer
+         *            Boolean value indicating whether to use streaming transfer
+         * @return This builder instance
+         */
+        Builder streamingTransferEnabled(boolean streamingTransfer);
+
+        /**
+         * Setter for block size of streaming transfer.
+         *
+         * @param streamingBlockSize
+         *            Value for block size of streaming transfer.
+         * @return This builder instance
+         */
+        Builder streamingBlockSize(String streamingBlockSize);
+
     }
 
     /**
@@ -270,14 +322,16 @@ public final class VfsOperationOptions {
         private String targetDirectory;
         private String filePatternRegex;
         private String archiveDirectory;
+        private String streamingBlockSize;
         private boolean createMissingDirectories;
         private boolean lockEnabled;
         private boolean ftpPassiveMode;
+        private boolean streamingTransfer;
 
         @Override
         public VfsOperationOptions build() {
             return new VfsOperationOptions(sourceDirectory, targetDirectory, filePatternRegex, archiveDirectory,
-                    createMissingDirectories, lockEnabled, ftpPassiveMode);
+                    createMissingDirectories, lockEnabled, ftpPassiveMode, streamingTransfer, streamingBlockSize);
         }
 
         @Override
@@ -309,6 +363,13 @@ public final class VfsOperationOptions {
         }
 
         @Override
+        public Builder streamingBlockSize(String streamingBlockSize) {
+            this.streamingBlockSize = streamingBlockSize;
+
+            return this;
+        }
+
+        @Override
         public Builder createMissingDirectories(boolean createMissingDirectories) {
             this.createMissingDirectories = createMissingDirectories;
 
@@ -328,5 +389,13 @@ public final class VfsOperationOptions {
 
             return this;
         }
+
+        @Override
+        public Builder streamingTransferEnabled(boolean streamingTransfer) {
+            this.streamingTransfer = streamingTransfer;
+
+            return this;
+        }
+
     }
 }
