@@ -20,7 +20,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.vfs2.FileSystemException;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
