@@ -104,6 +104,48 @@ public class VfsMediatorSerializerTest {
         assertEquals(expected.toString(), element.toString());
     }
 
+    @Test
+    public void serializeWithStreamingTransferEnabled() throws FileNotFoundException, XMLStreamException, JaxenException {
+        VfsMediatorSerializer serializer = getDefaultSerializer();
+        VfsMediator mediator = getDefaultMediator();
+        mediator.setStreamingTransferValue(true);
+        OMElement element = serializer.serializeSpecificMediator(mediator);
+        OMElement expected = getDocumentElementFromResourcePath("/serializedVfsMediatorWithStreamingTransferEnabled.xml");
+        assertEquals(expected.toString(), element.toString());
+    }
+
+    @Test
+    public void serializeWithStreamingTransferXPath() throws FileNotFoundException, XMLStreamException, JaxenException {
+        VfsMediatorSerializer serializer = getDefaultSerializer();
+        VfsMediator mediator = getDefaultMediator();
+        mediator.setStreamingTransferXpath(new SynapseXPath("//streamingEnabled/text()"));
+        OMElement element = serializer.serializeSpecificMediator(mediator);
+        OMElement expected = getDocumentElementFromResourcePath("/serializedVfsMediatorWithStreamingTransferXPath.xml");
+        assertEquals(expected.toString(), element.toString());
+    }
+
+    @Test
+    public void serializeWithStreamingTransferEnabledWithBlockSizeValue() throws FileNotFoundException, XMLStreamException, JaxenException {
+        VfsMediatorSerializer serializer = getDefaultSerializer();
+        VfsMediator mediator = getDefaultMediator();
+        mediator.setStreamingTransferValue(true);
+        mediator.setStreamingBlockSizeValue("1024");
+        OMElement element = serializer.serializeSpecificMediator(mediator);
+        OMElement expected = getDocumentElementFromResourcePath("/serializedVfsMediatorWithStreamingTransferEnabledWithBlockSizeValue.xml");
+        assertEquals(expected.toString(), element.toString());
+    }
+
+    @Test
+    public void serializeWithStreamingTransferEnabledWithBlockSizeXPath() throws FileNotFoundException, XMLStreamException, JaxenException {
+        VfsMediatorSerializer serializer = getDefaultSerializer();
+        VfsMediator mediator = getDefaultMediator();
+        mediator.setStreamingTransferValue(true);
+        mediator.setStreamingBlockSizeXpath(new SynapseXPath("//streamingBlockSize/text()"));
+        OMElement element = serializer.serializeSpecificMediator(mediator);
+        OMElement expected = getDocumentElementFromResourcePath("/serializedVfsMediatorWithStreamingTransferEnabledWithBlockSizeXPath.xml");
+        assertEquals(expected.toString(), element.toString());
+    }
+
     private VfsMediator getDefaultMediator() {
         VfsMediator mediator = new VfsMediator();
         mediator.setOperationValue("copy");

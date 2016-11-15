@@ -15,12 +15,6 @@
  */
 package fi.mystes.synapse.mediator.factory;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -38,6 +32,8 @@ import org.jaxen.JaxenException;
 import org.junit.Test;
 
 import fi.mystes.synapse.mediator.VfsMediator;
+
+import static org.junit.Assert.*;
 
 public class VfsMediatorFactoryTest {
 
@@ -189,6 +185,48 @@ public class VfsMediatorFactoryTest {
         assertNotNull(m);
         assertEquals("LockEnabled XPath should not be null", "//dynamicLockEnabled",
                 m.getLockEnabledXpath().toString());
+    }
+
+    @Test
+    public void testCreateMediatorFromValidXMLWhereStreamingTransferEnabledIsValue()
+        throws FileNotFoundException, XMLStreamException, JaxenException {
+        OMElement proxy = getDocumentElementFromResourcePath("/vfsMediatorStreamingTransferEnabledValueVALID.xml");
+        List<OMElement> vfsMediatorConfigs = (List<OMElement>) vfsMediator.evaluate(proxy);
+        VfsMediator m = (VfsMediator) factory.createMediator(vfsMediatorConfigs.get(0), null);
+        assertNotNull(m);
+        assertTrue(m.getStreamingTransferValue());
+    }
+
+    @Test
+    public void testCreateMediatorFromValidXMLWhereStreamingTransferEnabledIsExpression()
+        throws FileNotFoundException, XMLStreamException, JaxenException {
+        OMElement proxy = getDocumentElementFromResourcePath("/vfsMediatorStreamingTransferEnabledExpressionVALID.xml");
+        List<OMElement> vfsMediatorConfigs = (List<OMElement>) vfsMediator.evaluate(proxy);
+        VfsMediator m = (VfsMediator) factory.createMediator(vfsMediatorConfigs.get(0), null);
+        assertNotNull(m);
+        assertEquals("StreamingEnabled XPath should not be null", "//streamingTransferEnabled/text()",
+            m.getStreamingTransferXpath().toString());
+    }
+
+    @Test
+    public void testCreateMediatorFromValidXMLWhereStreamingTransferEnabledWithBlockSizeIsValue()
+        throws FileNotFoundException, XMLStreamException, JaxenException {
+        OMElement proxy = getDocumentElementFromResourcePath("/vfsMediatorStreamingTransferEnabledWithBlockSizeValueVALID.xml");
+        List<OMElement> vfsMediatorConfigs = (List<OMElement>) vfsMediator.evaluate(proxy);
+        VfsMediator m = (VfsMediator) factory.createMediator(vfsMediatorConfigs.get(0), null);
+        assertNotNull(m);
+        assertEquals("StreamingBlockSize should be the same as in xml configuration","1024", m.getStreamingBlockSizeValue());
+    }
+
+    @Test
+    public void testCreateMediatorFromValidXMLWhereStreamingTransferEnabledithBlockSizeIsExpression()
+        throws FileNotFoundException, XMLStreamException, JaxenException {
+        OMElement proxy = getDocumentElementFromResourcePath("/vfsMediatorStreamingTransferEnabledWithBlockSizeExpressionVALID.xml");
+        List<OMElement> vfsMediatorConfigs = (List<OMElement>) vfsMediator.evaluate(proxy);
+        VfsMediator m = (VfsMediator) factory.createMediator(vfsMediatorConfigs.get(0), null);
+        assertNotNull(m);
+        assertEquals("StreamingBlockSize XPath should not be null", "//streamingBlockSize/text()",
+            m.getStreamingBlockSizeXpath().toString());
     }
 
     @Test
