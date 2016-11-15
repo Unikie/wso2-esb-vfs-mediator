@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>fi.mystes.synapse.mediator</groupId>
     <artifactId>wso2-esb-vfs-mediator</artifactId>
-    <version>1.1</version>
+    <version>1.1.1-SNAPSHOT</version>
     <packaging>bundle</packaging>
     <name>WSO2 ESB Vfs Mediator</name>
     <description>Vfs Mediator is a custom WSO2 ESB mediator for copy/move file operations.</description>
