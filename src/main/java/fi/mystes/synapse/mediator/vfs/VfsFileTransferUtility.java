@@ -357,7 +357,6 @@ public class VfsFileTransferUtility {
 
             outputStream.flush();
             outputStream.close();
-            inputStream.close();
 
             long size = outputFile.getContent().getSize();
             boolean success = outputFile.exists() && size == inputFile.getContent().getSize();
@@ -373,7 +372,7 @@ public class VfsFileTransferUtility {
                     outputStream.close();
                 }
             } catch(IOException ex){
-                throw new SynapseException("Unexpected error during the file transfer", ex);
+                // making sure that output streams were closed in error situation
             }
 
             try {
@@ -381,7 +380,7 @@ public class VfsFileTransferUtility {
                     inputStream.close();
                 }
             } catch(IOException ex) {
-                throw new SynapseException("Unexpected error during the file transfer", ex);
+                // making sure that inputstream is closed
             }
 
         }
