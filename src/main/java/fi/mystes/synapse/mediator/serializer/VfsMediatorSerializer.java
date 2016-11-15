@@ -108,7 +108,12 @@ public class VfsMediatorSerializer extends AbstractMediatorSerializer {
             element.addChild(createMissingDirectories);
         }
 
-        if (mediator.getStreamingTransferValue()) {
+        if (mediator.getStreamingTransferXpath() != null) {
+            OMElement streamingTransfer = fac
+                .createOMElement(VfsMediatorConfigConstants.ATT_STREAMING_TRANSFER.getLocalPart(), synNS);
+            streamingTransfer.addAttribute(ATT_EXPR, mediator.getStreamingTransferXpath().toString(), nullNS);
+            element.addChild(streamingTransfer);
+        } else if (mediator.getStreamingTransferValue()) {
             OMElement streamingTransfer = fac
                     .createOMElement(VfsMediatorConfigConstants.ATT_STREAMING_TRANSFER.getLocalPart(), synNS);
             streamingTransfer.addAttribute(ATT_VALUE,
