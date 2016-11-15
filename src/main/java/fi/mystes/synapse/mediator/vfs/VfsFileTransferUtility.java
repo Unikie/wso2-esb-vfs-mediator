@@ -372,10 +372,17 @@ public class VfsFileTransferUtility {
                     outputStream.flush();
                     outputStream.close();
                 }
+            } catch(IOException ex){
+                throw new SynapseException("Unexpected error during the file transfer", ex);
             }
-            catch(IOException ex){ }
 
-            try { if (inputStream != null) inputStream.close(); } catch(IOException ex) { }
+            try {
+                if (inputStream != null) {
+                    inputStream.close();
+                }
+            } catch(IOException ex) {
+                throw new SynapseException("Unexpected error during the file transfer", ex);
+            }
 
         }
 
