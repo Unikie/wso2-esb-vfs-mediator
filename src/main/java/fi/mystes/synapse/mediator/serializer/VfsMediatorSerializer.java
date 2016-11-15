@@ -108,6 +108,26 @@ public class VfsMediatorSerializer extends AbstractMediatorSerializer {
             element.addChild(createMissingDirectories);
         }
 
+        if (mediator.getStreamingTransferValue()) {
+            OMElement streamingTransfer = fac
+                    .createOMElement(VfsMediatorConfigConstants.ATT_STREAMING_TRANSFER.getLocalPart(), synNS);
+            streamingTransfer.addAttribute(ATT_VALUE,
+                    String.valueOf(mediator.getStreamingTransferValue()), nullNS);
+            element.addChild(streamingTransfer);
+        }
+
+        if (mediator.getStreamingBlockSizeXpath() != null) {
+            OMElement streamingBlockSize = fac
+                    .createOMElement(VfsMediatorConfigConstants.ATT_STREAMING_BLOCK_SIZE.getLocalPart(), synNS);
+            streamingBlockSize.addAttribute(ATT_EXPR, mediator.getStreamingBlockSizeXpath().toString(), nullNS);
+            element.addChild(streamingBlockSize);
+        } else if (mediator.getStreamingBlockSizeValue() != null) {
+            OMElement streamingBlockSize = fac
+                    .createOMElement(VfsMediatorConfigConstants.ATT_STREAMING_BLOCK_SIZE.getLocalPart(), synNS);
+            streamingBlockSize.addAttribute(ATT_VALUE, mediator.getStreamingBlockSizeValue(), nullNS);
+            element.addChild(streamingBlockSize);
+        }
+
         if (mediator.getLockEnabledValue() != null) {
             OMElement lockEnabled = fac.createOMElement(VfsMediatorConfigConstants.ATT_LOCK_ENABLED.getLocalPart(),
                     synNS);

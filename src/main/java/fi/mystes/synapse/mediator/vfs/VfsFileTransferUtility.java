@@ -17,16 +17,13 @@ package fi.mystes.synapse.mediator.vfs;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.commons.vfs2.FileFilter;
-import org.apache.commons.vfs2.FileFilterSelector;
-import org.apache.commons.vfs2.FileObject;
-import org.apache.commons.vfs2.FileSelectInfo;
-import org.apache.commons.vfs2.FileSystemException;
-import org.apache.commons.vfs2.FileSystemOptions;
-import org.apache.commons.vfs2.FileType;
-import org.apache.commons.vfs2.Selectors;
-import org.apache.commons.vfs2.VFS;
+import org.apache.commons.vfs2.*;
 import org.apache.commons.vfs2.provider.ftp.FtpFileSystemConfigBuilder;
+import org.apache.synapse.SynapseException;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  * Utility class providing methods for VFS operations (copy/move).
@@ -35,6 +32,7 @@ public class VfsFileTransferUtility {
 
     private static final Log log = LogFactory.getLog(VfsFileTransferUtility.class);
     private static final String LOCK_FILE_SUFFIX = ".lock";
+    private static final String DEFAULT_STREAMING_BLOCK_SIZE = "1024";
 
     private final VfsOperationOptions options;
     private final FileSystemOptions fsOptions;
@@ -139,10 +137,26 @@ public class VfsFileTransferUtility {
             try {
                 log.debug(
                         "About to copy " + fileObjectNameForDebug(file) + " to " + fileObjectNameForDebug(newLocation));
-                newLocation.copyFrom(file, Selectors.SELECT_SELF);
+
+                boolean success = true;
+
+                if(options.isStreamingTransferEnabled()) {
+                    success = streamFromFileToFile(file, resolveFile(targetPath));
+                }
+                else{
+                    newLocation.copyFrom(file, Selectors.SELECT_SELF);
+                    long size = newLocation.getContent().getSize();
+                    success = newLocation.exists() && size == file.getContent().getSize();
+                }
+
                 newLocation.close();
                 file.close();
+
+                if(!success){
+                    throw new SynapseException("File copy not successful.");
+                }
                 log.debug("File copied to " + fileObjectNameForDebug(newLocation));
+
             } finally {
                 if (lockFilePath != null) {
                     deleteLockFile(lockFilePath);
@@ -153,6 +167,7 @@ public class VfsFileTransferUtility {
             return false;
         }
     }
+
 
     /**
      * Creates File filter that matches file names to given regex
@@ -241,9 +256,28 @@ public class VfsFileTransferUtility {
             try {
                 log.debug(
                         "About to move " + fileObjectNameForDebug(file) + " to " + fileObjectNameForDebug(newLocation));
-                newLocation.copyFrom(file, Selectors.SELECT_SELF);
+
+                boolean success = true;
+
+                if(options.isStreamingTransferEnabled()) {
+                    success = streamFromFileToFile(file, resolveFile(targetPath));
+                }
+                else{
+                    newLocation.copyFrom(file, Selectors.SELECT_SELF);
+                    long size = newLocation.getContent().getSize();
+                    success = newLocation.exists() && size == file.getContent().getSize();
+                }
+
                 newLocation.close();
-                file.delete();
+
+                if(success) {
+                    file.delete();
+                }
+                else{
+                    file.close();
+                    throw new SynapseException("File move not successful.");
+                }
+
                 file.close();
                 log.debug("File moved to " + fileObjectNameForDebug(newLocation));
             } finally {
@@ -256,6 +290,7 @@ public class VfsFileTransferUtility {
             return false;
         }
     }
+
 
     /**
      * Helper method to create lock file for multithreading.
@@ -281,6 +316,69 @@ public class VfsFileTransferUtility {
         lockFile.close();
 
         return uri;
+    }
+
+    /**
+     * Helper method to stream file from source to destination folder.
+     *
+     * @param inputFile
+     *            FileObject of input file
+     * @param outputFile
+     *            FileObject of output file
+     * @return Boolean value of success. It is based on file length comparison.
+     * @throws FileSystemException
+     *             If given file operation fails
+     */
+    private boolean streamFromFileToFile(FileObject inputFile, FileObject outputFile) {
+
+        InputStream inputStream = null;
+        OutputStream outputStream = null;
+
+        try {
+            inputStream = inputFile.getContent().getInputStream();
+
+            outputStream = outputFile.getContent().getOutputStream();
+
+            String blockSize = DEFAULT_STREAMING_BLOCK_SIZE;
+
+            if(!options.getStreamingBlockSize().matches("^\\d+$")) {
+                blockSize = DEFAULT_STREAMING_BLOCK_SIZE;
+                log.warn("Streaming block size not numeric, using default value of " + DEFAULT_STREAMING_BLOCK_SIZE);
+            }
+            else{
+                blockSize = options.getStreamingBlockSize();
+            }
+
+            int length;
+            byte[] buffer = new byte[new Integer(blockSize)];
+            while ((length = inputStream.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, length);
+            }
+
+            outputStream.flush();
+            outputStream.close();
+            inputStream.close();
+
+            long size = outputFile.getContent().getSize();
+            boolean success = outputFile.exists() && size == inputFile.getContent().getSize();
+
+            return success;
+        } catch (IOException e) {
+            throw new SynapseException("Unexpected error during the file transfer", e);
+        }
+        finally {
+            try {
+                if (outputStream != null) {
+                    outputStream.flush();
+                    outputStream.close();
+                }
+            }
+            catch(IOException ex){ }
+
+            try { if (inputStream != null) inputStream.close(); } catch(IOException ex) { }
+
+        }
+
     }
 
     /**

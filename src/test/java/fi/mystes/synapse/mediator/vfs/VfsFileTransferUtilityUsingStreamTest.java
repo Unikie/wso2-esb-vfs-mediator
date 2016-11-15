@@ -20,7 +20,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.vfs2.FileSystemException;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
@@ -35,7 +34,7 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.startsWith;
 import static org.mockito.Mockito.*;
 
-public class VfsFileTransferUtilityTest {
+public class VfsFileTransferUtilityUsingStreamTest {
     private static final String SOURCE_DIR = "tmp:///foo/bar/dir";
     private static final String TARGET_DIR = "tmp:///bar/foo/dir";
     private static final String ARCHIVE_DIR = "tmp:///bar/foo/archive";
@@ -56,17 +55,17 @@ public class VfsFileTransferUtilityTest {
 
     @Test(expected = FileSystemException.class)
     public void copyFilesFailsWhenSourceDirectoryNotDirectory() throws FileSystemException {
-        new VfsFileTransferUtility(VfsOperationOptions.with().sourceDirectory("tmp:///not/existing/directory").targetDirectory(TARGET_DIR).build()).copyFiles();
+        new VfsFileTransferUtility(VfsOperationOptions.with().sourceDirectory("tmp:///not/existing/directory").targetDirectory(TARGET_DIR).streamingTransferEnabled(true).streamingBlockSize("8192").build()).copyFiles();
     }
 
     @Test(expected = FileSystemException.class)
     public void copyFilesFailsWhenTargetDirectoryNotDirectory() throws FileSystemException {
-        new VfsFileTransferUtility(VfsOperationOptions.with().sourceDirectory(SOURCE_DIR).targetDirectory("tmp:///not/existing/directory").build()).copyFiles();
+        new VfsFileTransferUtility(VfsOperationOptions.with().sourceDirectory(SOURCE_DIR).targetDirectory("tmp:///not/existing/directory").streamingTransferEnabled(true).streamingBlockSize("8192").build()).copyFiles();
     }
 
     @Test
     public void copyFilesSuccessfulWhenSourceAndTargetDirectoryValid() throws FileSystemException {
-        int copyCount = new VfsFileTransferUtility(VfsOperationOptions.with().sourceDirectory(SOURCE_DIR).targetDirectory(TARGET_DIR).build()).copyFiles();
+        int copyCount = new VfsFileTransferUtility(VfsOperationOptions.with().sourceDirectory(SOURCE_DIR).targetDirectory(TARGET_DIR).streamingTransferEnabled(true).streamingBlockSize("8192").build()).copyFiles();
         assertEquals("Utility return wrong file copied count", 0, copyCount);
     }
 
@@ -77,7 +76,7 @@ public class VfsFileTransferUtilityTest {
         createTestFiles(SOURCE_DIR, 1);
 
         // copy files
-        int copyCount = new VfsFileTransferUtility(VfsOperationOptions.with().sourceDirectory(SOURCE_DIR).targetDirectory(TARGET_DIR).build()).copyFiles();
+        int copyCount = new VfsFileTransferUtility(VfsOperationOptions.with().sourceDirectory(SOURCE_DIR).targetDirectory(TARGET_DIR).streamingTransferEnabled(true).streamingBlockSize("8192").build()).copyFiles();
 
         // check that files were copied
         assertFilesExists(SOURCE_DIR, 1);
@@ -92,7 +91,7 @@ public class VfsFileTransferUtilityTest {
         String lockFilePath = lockFilePath(targetPath);
         LockFileVerifier verifier = lockFileVerifierFor(lockFilePath);
         Log log = applyMockLog(verifier);
-        new VfsFileTransferUtility(VfsOperationOptions.with().sourceDirectory(SOURCE_DIR).targetDirectory(TARGET_DIR).filePatternRegex(fileToCopy.getName()).lockEnabled(true).build()).copyFiles();
+        new VfsFileTransferUtility(VfsOperationOptions.with().sourceDirectory(SOURCE_DIR).targetDirectory(TARGET_DIR).filePatternRegex(fileToCopy.getName()).lockEnabled(true).streamingTransferEnabled(true).streamingBlockSize("8192").build()).copyFiles();
         assertFilesExists(TARGET_DIR, 1);
         verify(log).debug(expectedLockFileDebugString(verifier));
         verify(log).debug(expectedFileCopiedDebugString(fileToCopy, targetPath));
@@ -105,7 +104,7 @@ public class VfsFileTransferUtilityTest {
         String lockFilePath = lockFilePath(targetPath);
         LockFileVerifier verifier = lockFileVerifierFor(lockFilePath);
         Log log = applyMockLog(verifier);
-        new VfsFileTransferUtility(VfsOperationOptions.with().sourceDirectory(SOURCE_DIR).targetDirectory(TARGET_DIR).filePatternRegex(fileToCopy.getName()).lockEnabled(false).build()).copyFiles();
+        new VfsFileTransferUtility(VfsOperationOptions.with().sourceDirectory(SOURCE_DIR).targetDirectory(TARGET_DIR).filePatternRegex(fileToCopy.getName()).lockEnabled(false).streamingTransferEnabled(true).streamingBlockSize("8192").build()).copyFiles();
         assertFilesExists(TARGET_DIR, 1);
         expectCommonDebugLogging(log);
         verify(log).debug(expectedFileCopiedDebugString(fileToCopy, targetPath));
@@ -118,7 +117,7 @@ public class VfsFileTransferUtilityTest {
         createTestFiles(SOURCE_DIR, 10);
 
         // copy files
-        int copyCount = new VfsFileTransferUtility(VfsOperationOptions.with().sourceDirectory(SOURCE_DIR).targetDirectory(TARGET_DIR).archiveDirectory(ARCHIVE_DIR).build()).copyFiles();
+        int copyCount = new VfsFileTransferUtility(VfsOperationOptions.with().sourceDirectory(SOURCE_DIR).targetDirectory(TARGET_DIR).archiveDirectory(ARCHIVE_DIR).streamingTransferEnabled(true).streamingBlockSize("8192").build()).copyFiles();
 
         // check that files were copied
         assertFilesExists(SOURCE_DIR, 10);
@@ -134,7 +133,7 @@ public class VfsFileTransferUtilityTest {
         createFile(SOURCE_DIR + "/theOne.txt", "this is file content");
 
         // copy files
-        int copyCount = new VfsFileTransferUtility(VfsOperationOptions.with().sourceDirectory(SOURCE_DIR).targetDirectory(TARGET_DIR).filePatternRegex("theOne.txt").build()).copyFiles();
+        int copyCount = new VfsFileTransferUtility(VfsOperationOptions.with().sourceDirectory(SOURCE_DIR).targetDirectory(TARGET_DIR).filePatternRegex("theOne.txt").streamingTransferEnabled(true).streamingBlockSize("8192").build()).copyFiles();
 
         // check that files were copied
         assertFilesExists(SOURCE_DIR, 10);
@@ -150,7 +149,7 @@ public class VfsFileTransferUtilityTest {
         createFile(SOURCE_DIR + "/one.xml", "this is file content for test file 1");
         createFile(SOURCE_DIR + "/two.XML", "this is file content for test file 2");
 
-        int copyCount = new VfsFileTransferUtility(VfsOperationOptions.with().sourceDirectory(SOURCE_DIR).targetDirectory(TARGET_DIR).filePatternRegex(".*.xml|.*.XML").build()).copyFiles();
+        int copyCount = new VfsFileTransferUtility(VfsOperationOptions.with().sourceDirectory(SOURCE_DIR).targetDirectory(TARGET_DIR).filePatternRegex(".*.xml|.*.XML").streamingTransferEnabled(true).streamingBlockSize("8192").build()).copyFiles();
 
         // check that files were copied
         assertFilesExists(SOURCE_DIR, 5);
@@ -160,17 +159,17 @@ public class VfsFileTransferUtilityTest {
 
     @Test(expected = FileSystemException.class)
     public void moveFilesFailsWhenSourceDirectoryNotDirectory() throws FileSystemException {
-        new VfsFileTransferUtility(VfsOperationOptions.with().sourceDirectory("tmp:///not/existing/directory").targetDirectory(TARGET_DIR).build()).moveFiles();
+        new VfsFileTransferUtility(VfsOperationOptions.with().sourceDirectory("tmp:///not/existing/directory").targetDirectory(TARGET_DIR).streamingTransferEnabled(true).streamingBlockSize("8192").build()).moveFiles();
     }
 
     @Test(expected = FileSystemException.class)
     public void moveFilesFailsWhenTargetDirectoryNotDirectory() throws FileSystemException {
-        new VfsFileTransferUtility(VfsOperationOptions.with().sourceDirectory(SOURCE_DIR).targetDirectory("tmp:///not/existing/directory").build()).moveFiles();
+        new VfsFileTransferUtility(VfsOperationOptions.with().sourceDirectory(SOURCE_DIR).targetDirectory("tmp:///not/existing/directory").streamingTransferEnabled(true).streamingBlockSize("8192").build()).moveFiles();
     }
 
     @Test
     public void moveFilesSuccessfulWhenSourceAndTargetDirectoryValid() throws FileSystemException {
-        int moveCount = new VfsFileTransferUtility(VfsOperationOptions.with().sourceDirectory(SOURCE_DIR).targetDirectory(TARGET_DIR).build()).moveFiles();
+        int moveCount = new VfsFileTransferUtility(VfsOperationOptions.with().sourceDirectory(SOURCE_DIR).targetDirectory(TARGET_DIR).streamingTransferEnabled(true).streamingBlockSize("8192").build()).moveFiles();
         assertEquals("Utility return wrong file move count", 0, moveCount);
     }
 
@@ -181,7 +180,7 @@ public class VfsFileTransferUtilityTest {
         createTestFiles(SOURCE_DIR, 10);
 
         // move files
-        int moveCount = new VfsFileTransferUtility(VfsOperationOptions.with().sourceDirectory(SOURCE_DIR).targetDirectory(TARGET_DIR).build()).moveFiles();
+        int moveCount = new VfsFileTransferUtility(VfsOperationOptions.with().sourceDirectory(SOURCE_DIR).targetDirectory(TARGET_DIR).streamingTransferEnabled(true).streamingBlockSize("8192").build()).moveFiles();
 
         // check that files were moved
         assertFilesExists(TARGET_DIR, 10);
@@ -195,7 +194,7 @@ public class VfsFileTransferUtilityTest {
         createTestFiles(SOURCE_DIR, 10);
 
         // move files
-        int moveCount = new VfsFileTransferUtility(VfsOperationOptions.with().sourceDirectory(SOURCE_DIR).targetDirectory(TARGET_DIR).archiveDirectory(ARCHIVE_DIR).build()).moveFiles();
+        int moveCount = new VfsFileTransferUtility(VfsOperationOptions.with().sourceDirectory(SOURCE_DIR).targetDirectory(TARGET_DIR).archiveDirectory(ARCHIVE_DIR).streamingTransferEnabled(true).streamingBlockSize("8192").build()).moveFiles();
 
         // check that files were moved
         assertFilesExists(TARGET_DIR, 10);
@@ -210,7 +209,7 @@ public class VfsFileTransferUtilityTest {
         String lockFilePath = lockFilePath(targetPath);
         LockFileVerifier verifier = lockFileVerifierFor(lockFilePath);
         Log log = applyMockLog(verifier);
-        new VfsFileTransferUtility(VfsOperationOptions.with().sourceDirectory(SOURCE_DIR).targetDirectory(TARGET_DIR).lockEnabled(true).build()).moveFiles();
+        new VfsFileTransferUtility(VfsOperationOptions.with().sourceDirectory(SOURCE_DIR).targetDirectory(TARGET_DIR).lockEnabled(true).streamingTransferEnabled(true).streamingBlockSize("8192").build()).moveFiles();
         assertFilesExists(TARGET_DIR, 1);
         verify(log).debug(expectedLockFileDebugString(verifier));
         verify(log).debug(expectedFileMovedDebugString(fileToMove, targetPath));
@@ -223,7 +222,7 @@ public class VfsFileTransferUtilityTest {
         String lockFilePath = lockFilePath(targetPath);
         LockFileVerifier verifier = lockFileVerifierFor(lockFilePath);
         Log log = applyMockLog(verifier);
-        new VfsFileTransferUtility(VfsOperationOptions.with().sourceDirectory(SOURCE_DIR).targetDirectory(TARGET_DIR).filePatternRegex(fileToMove.getName()).lockEnabled(false).build()).moveFiles();
+        new VfsFileTransferUtility(VfsOperationOptions.with().sourceDirectory(SOURCE_DIR).targetDirectory(TARGET_DIR).filePatternRegex(fileToMove.getName()).lockEnabled(false).streamingTransferEnabled(true).streamingBlockSize("8192").build()).moveFiles();
         assertFilesExists(TARGET_DIR, 1);
         expectCommonDebugLogging(log);
         verify(log).debug(expectedFileMovedDebugString(fileToMove, targetPath));
@@ -237,7 +236,7 @@ public class VfsFileTransferUtilityTest {
         createFile(SOURCE_DIR + "/theOne.txt", "this is file content");
 
         // move files
-        int count = new VfsFileTransferUtility(VfsOperationOptions.with().sourceDirectory(SOURCE_DIR).targetDirectory(TARGET_DIR).filePatternRegex("theOne.txt").build()).moveFiles();
+        int count = new VfsFileTransferUtility(VfsOperationOptions.with().sourceDirectory(SOURCE_DIR).targetDirectory(TARGET_DIR).filePatternRegex("theOne.txt").streamingTransferEnabled(true).streamingBlockSize("8192").build()).moveFiles();
 
         // check that files were copied
         assertFilesExists(SOURCE_DIR, 9);
@@ -254,7 +253,7 @@ public class VfsFileTransferUtilityTest {
         createFile(SOURCE_DIR + "/two.XML", "this is file content for test file 2");
 
         // move files
-        int count = new VfsFileTransferUtility(VfsOperationOptions.with().sourceDirectory(SOURCE_DIR).targetDirectory(TARGET_DIR).filePatternRegex(".*.xml|.*.XML").build()).moveFiles();
+        int count = new VfsFileTransferUtility(VfsOperationOptions.with().sourceDirectory(SOURCE_DIR).targetDirectory(TARGET_DIR).filePatternRegex(".*.xml|.*.XML").streamingTransferEnabled(true).streamingBlockSize("8192").build()).moveFiles();
 
         // check that files were copied
         assertFilesExists(SOURCE_DIR, 3);
@@ -269,7 +268,7 @@ public class VfsFileTransferUtilityTest {
 
         String dynamicArchive = ARCHIVE_DIR + "/how/deep/is/the/rabbit/hole";
 
-        int copyCount = new VfsFileTransferUtility(VfsOperationOptions.with().sourceDirectory(SOURCE_DIR).targetDirectory(TARGET_DIR).archiveDirectory(dynamicArchive).createMissingDirectories(true).build()).copyFiles();
+        int copyCount = new VfsFileTransferUtility(VfsOperationOptions.with().sourceDirectory(SOURCE_DIR).targetDirectory(TARGET_DIR).archiveDirectory(dynamicArchive).createMissingDirectories(true).streamingTransferEnabled(true).streamingBlockSize("8192").build()).copyFiles();
 
         // check that files were copied
         assertFilesExists(SOURCE_DIR, 10);
@@ -286,7 +285,7 @@ public class VfsFileTransferUtilityTest {
         String dynamicTarget = TARGET_DIR + "/how/deep/is/the/rabbit/hole";
 
         // copy files
-        int copyCount = new VfsFileTransferUtility(VfsOperationOptions.with().sourceDirectory(SOURCE_DIR).targetDirectory(dynamicTarget).archiveDirectory(ARCHIVE_DIR).createMissingDirectories(true).build()).copyFiles();
+        int copyCount = new VfsFileTransferUtility(VfsOperationOptions.with().sourceDirectory(SOURCE_DIR).targetDirectory(dynamicTarget).archiveDirectory(ARCHIVE_DIR).createMissingDirectories(true).streamingTransferEnabled(true).streamingBlockSize("8192").build()).copyFiles();
 
         // check that files were copied
         assertFilesExists(SOURCE_DIR, 10);
