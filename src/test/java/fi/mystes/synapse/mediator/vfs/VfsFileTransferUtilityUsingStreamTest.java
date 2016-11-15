@@ -85,6 +85,20 @@ public class VfsFileTransferUtilityUsingStreamTest {
     }
 
     @Test
+    public void copiesOneFileWhenValidSourceAndTargetDirectorySpecifiedWithDefaultBlockSize() throws FileSystemException, IOException {
+        // create test file set
+        createTestFiles(SOURCE_DIR, 1);
+
+        // copy files
+        int copyCount = new VfsFileTransferUtility(VfsOperationOptions.with().sourceDirectory(SOURCE_DIR).targetDirectory(TARGET_DIR).streamingTransferEnabled(true).build()).copyFiles();
+
+        // check that files were copied
+        assertFilesExists(SOURCE_DIR, 1);
+        assertFilesExists(TARGET_DIR, 1);
+        assertEquals("Utility returned false file copied count", 1, copyCount);
+    }
+
+    @Test
     public void createsLockFileWhenCopyingFileIfLockEnabled() throws IOException, NoSuchFieldException, IllegalAccessException {
         TestFile fileToCopy = createTestFiles(SOURCE_DIR, 1).get(0);
         String targetPath = filePath(TARGET_DIR, fileToCopy.getName());

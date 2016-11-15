@@ -341,7 +341,7 @@ public class VfsFileTransferUtility {
 
             String blockSize = DEFAULT_STREAMING_BLOCK_SIZE;
 
-            if(!options.getStreamingBlockSize().matches("^\\d+$")) {
+            if(options.getStreamingBlockSize() == null || !options.getStreamingBlockSize().matches("^\\d+$")) {
                 blockSize = DEFAULT_STREAMING_BLOCK_SIZE;
                 log.warn("Streaming block size not numeric, using default value of " + DEFAULT_STREAMING_BLOCK_SIZE);
             }
