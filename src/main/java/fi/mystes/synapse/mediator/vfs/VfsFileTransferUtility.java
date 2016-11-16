@@ -138,25 +138,16 @@ public class VfsFileTransferUtility {
                 log.debug(
                         "About to copy " + fileObjectNameForDebug(file) + " to " + fileObjectNameForDebug(newLocation));
 
-                boolean success = true;
-
                 if(options.isStreamingTransferEnabled()) {
-                    success = streamFromFileToFile(file, resolveFile(targetPath));
+                    streamFromFileToFile(file, resolveFile(targetPath));
                 }
                 else{
                     newLocation.copyFrom(file, Selectors.SELECT_SELF);
-                    long size = newLocation.getContent().getSize();
-                    success = newLocation.exists() && size == file.getContent().getSize();
                 }
 
                 newLocation.close();
                 file.close();
-
-                if(!success){
-                    throw new SynapseException("File copy not successful.");
-                }
                 log.debug("File copied to " + fileObjectNameForDebug(newLocation));
-
             } finally {
                 if (lockFilePath != null) {
                     deleteLockFile(lockFilePath);
@@ -257,27 +248,15 @@ public class VfsFileTransferUtility {
                 log.debug(
                         "About to move " + fileObjectNameForDebug(file) + " to " + fileObjectNameForDebug(newLocation));
 
-                boolean success = true;
-
                 if(options.isStreamingTransferEnabled()) {
-                    success = streamFromFileToFile(file, resolveFile(targetPath));
+                    streamFromFileToFile(file, resolveFile(targetPath));
                 }
                 else{
                     newLocation.copyFrom(file, Selectors.SELECT_SELF);
-                    long size = newLocation.getContent().getSize();
-                    success = newLocation.exists() && size == file.getContent().getSize();
                 }
 
                 newLocation.close();
-
-                if(success) {
-                    file.delete();
-                }
-                else{
-                    file.close();
-                    throw new SynapseException("File move not successful.");
-                }
-
+                file.delete();
                 file.close();
                 log.debug("File moved to " + fileObjectNameForDebug(newLocation));
             } finally {
@@ -329,7 +308,7 @@ public class VfsFileTransferUtility {
      * @throws FileSystemException
      *             If given file operation fails
      */
-    private boolean streamFromFileToFile(FileObject inputFile, FileObject outputFile) {
+    private void streamFromFileToFile(FileObject inputFile, FileObject outputFile) {
 
         InputStream inputStream = null;
         OutputStream outputStream = null;
@@ -357,11 +336,6 @@ public class VfsFileTransferUtility {
 
             outputStream.flush();
             outputStream.close();
-
-            long size = outputFile.getContent().getSize();
-            boolean success = outputFile.exists() && size == inputFile.getContent().getSize();
-
-            return success;
         } catch (IOException e) {
             throw new SynapseException("Unexpected error during the file transfer", e);
         }
