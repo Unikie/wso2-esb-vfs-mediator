@@ -29,6 +29,9 @@ public final class VfsOperationOptions {
     private final boolean lockEnabled;
     private final boolean ftpPassiveMode;
     private final boolean streamingTransfer;
+    private int sftpTimeout;
+
+    private final int DEFAULT_SFTP_TIMEOUT = 30000;
 
     /**
      * Class constructor.
@@ -66,6 +69,25 @@ public final class VfsOperationOptions {
         this.ftpPassiveMode = ftpPassiveMode;
         this.streamingTransfer = streamingTransfer;
         this.streamingBlockSize = streamingBlockSize;
+        this.sftpTimeout = DEFAULT_SFTP_TIMEOUT;
+    }
+
+    public VfsOperationOptions(String sourceDirectory, String targetDirectory, String filePatternRegex,
+                               String archiveDirectory, boolean createMissingDirectories, boolean lockEnabled,
+                               boolean ftpPassiveMode, boolean streamingTransfer, String streamingBlockSize, int sftpTimeout) {
+        this(
+                sourceDirectory,
+                targetDirectory,
+                filePatternRegex,
+                archiveDirectory,
+                createMissingDirectories,
+                lockEnabled,
+                ftpPassiveMode,
+                streamingTransfer,
+                streamingBlockSize
+        );
+
+        this.sftpTimeout = sftpTimeout;
     }
 
     /**
@@ -150,6 +172,15 @@ public final class VfsOperationOptions {
      */
     public boolean isStreamingTransferEnabled() {
         return streamingTransfer;
+    }
+
+    /**
+     * Returns integer value of SFTP timeout in milliseconds.
+     *
+     * @return SFTP timeout value in milliseconds
+     */
+    public int getSftpTimeout() {
+        return this.sftpTimeout;
     }
 
     /**
@@ -311,6 +342,14 @@ public final class VfsOperationOptions {
          */
         Builder streamingBlockSize(String streamingBlockSize);
 
+        /**
+         * Setter for SFTP timeout.
+         *
+         * @param timeout Value of the timeout in milliseconds.
+         * @return This builder instance
+         */
+        Builder sftpTimeout(int timeout);
+
     }
 
     /**
@@ -327,11 +366,12 @@ public final class VfsOperationOptions {
         private boolean lockEnabled;
         private boolean ftpPassiveMode;
         private boolean streamingTransfer;
+        private int sftpTimeout;
 
         @Override
         public VfsOperationOptions build() {
             return new VfsOperationOptions(sourceDirectory, targetDirectory, filePatternRegex, archiveDirectory,
-                    createMissingDirectories, lockEnabled, ftpPassiveMode, streamingTransfer, streamingBlockSize);
+                    createMissingDirectories, lockEnabled, ftpPassiveMode, streamingTransfer, streamingBlockSize, sftpTimeout);
         }
 
         @Override
@@ -397,5 +437,11 @@ public final class VfsOperationOptions {
             return this;
         }
 
+        @Override
+        public Builder sftpTimeout(int timeout) {
+            this.sftpTimeout = timeout;
+
+            return this;
+        }
     }
 }

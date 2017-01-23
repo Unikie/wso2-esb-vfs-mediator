@@ -19,7 +19,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.vfs2.*;
 import org.apache.commons.vfs2.impl.StandardFileSystemManager;
-import org.apache.commons.vfs2.operations.FileOperationProvider;
 import org.apache.commons.vfs2.provider.ftp.FtpFileSystemConfigBuilder;
 import org.apache.commons.vfs2.provider.sftp.SftpFileSystemConfigBuilder;
 import org.apache.synapse.SynapseException;
@@ -39,7 +38,6 @@ public class VfsFileTransferUtility {
 
     private final VfsOperationOptions options;
     private final FileSystemOptions fsOptions;
-    //private StandardFileSystemManager manager;
 
     /**
      * Constructor.
@@ -59,9 +57,7 @@ public class VfsFileTransferUtility {
             FtpFileSystemConfigBuilder.getInstance().setPassiveMode(fsOptions, true);
         }
 
-        FtpFileSystemConfigBuilder.getInstance().setSoTimeout(fsOptions, 8000);
-        FtpFileSystemConfigBuilder.getInstance().setDataTimeout(fsOptions, 8000);
-        SftpFileSystemConfigBuilder.getInstance().setTimeout(fsOptions, 8000);
+        SftpFileSystemConfigBuilder.getInstance().setTimeout(fsOptions, options.getSftpTimeout());
     }
 
     /**
@@ -490,14 +486,5 @@ public class VfsFileTransferUtility {
 
         return manager;
     }
-
-
-
-//    private void closeManager() {
-//        if(manager != null) {
-//            manager.close();
-//        }
-//        manager = null;
-//    }
 
 }

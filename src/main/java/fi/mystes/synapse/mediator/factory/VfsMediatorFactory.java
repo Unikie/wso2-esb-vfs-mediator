@@ -78,6 +78,8 @@ public class VfsMediatorFactory extends AbstractMediatorFactory {
 
         handleStreamingBlockSizeElement(omElement, mediator);
 
+        handleSftpTimeoutElement(omElement, mediator);
+
         return mediator;
     }
 
@@ -349,4 +351,20 @@ public class VfsMediatorFactory extends AbstractMediatorFactory {
         }
     }
 
+    private void handleSftpTimeoutElement(OMElement element, VfsMediator mediator) {
+        OMElement sftpTimeoutElement = element.getFirstChildWithName(VfsMediatorConfigConstants.ATT_SFTP_TIMEOUT);
+
+        if(sftpTimeoutElement == null) return;
+
+        String timeoutValue = sftpTimeoutElement.getAttributeValue(ATT_VALUE);
+
+        if(timeoutValue != null) {
+            try {
+                int valueAsInt = Integer.parseInt(timeoutValue);
+                mediator.setSftpTimeoutValue(valueAsInt);
+            } catch (NumberFormatException e) {
+                handleException("Could not read sftp timeout value from: " + timeoutValue, e);
+            }
+        }
+    }
 }

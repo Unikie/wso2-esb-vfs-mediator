@@ -50,6 +50,7 @@ public class VfsMediator extends AbstractMediator {
     private Boolean lockEnabledValue;
     private boolean streamingTransferValue;
     private String streamingBlockSizeValue;
+    private Integer sftpTimeoutValue;
 
     private SynapseXPath filePatternXpath;
     private SynapseXPath operationXpath;
@@ -459,6 +460,24 @@ public class VfsMediator extends AbstractMediator {
      */
     public SynapseXPath getLockEnabledXpath() {
         return this.lockEnabledXpath;
+    }
+
+    /**
+     * Setter for SFTP timeout value.
+     *
+     * @param value
+     */
+    public void setSftpTimeoutValue(Integer value) {
+        this.sftpTimeoutValue = value;
+    }
+
+    /**
+     * Getter for SFTP timeout value.
+     *
+     * @return
+     */
+    public Integer getSftpTimeoutValue() {
+        return this.sftpTimeoutValue;
     }
 
     /**

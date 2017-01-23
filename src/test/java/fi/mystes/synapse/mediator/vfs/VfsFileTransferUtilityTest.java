@@ -294,6 +294,19 @@ public class VfsFileTransferUtilityTest {
         assertEquals("Utility returned false file copied count", 10, copyCount);
     }
 
+    //@Test // FIXME: java.lang.NoClassDefFoundError: org/apache/commons/net/ftp/parser/FTPFileEntryParserFactory
+    public void testFtpPassiveFlag() throws Exception {
+        createTestFiles(SOURCE_DIR, 3);
+
+        VfsOperationOptions opts = VfsOperationOptions.with().sourceDirectory(SOURCE_DIR).targetDirectory(TARGET_DIR).archiveDirectory(ARCHIVE_DIR).createMissingDirectories(true).ftpPassiveModeEnabled(true).build();
+        int copyCount = new VfsFileTransferUtility((opts)).copyFiles();
+
+        assertFilesExists(SOURCE_DIR, 3);
+        assertFilesExists(TARGET_DIR, 3);
+        assertFilesExists(ARCHIVE_DIR, 3);
+        assertEquals("Utility returned wrong file copied count", 3, copyCount);
+    }
+
     private String expectedFolderNotExistsErrorString(String folder) {
         return "Path " + folder + " is not a folder!";
     }
