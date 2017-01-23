@@ -140,6 +140,12 @@ public class VfsMediatorSerializer extends AbstractMediatorSerializer {
             element.addChild(lockEnabled);
         }
 
+        if(mediator.getSftpTimeoutValue() != null) {
+            OMElement sftpTimeout = fac.createOMElement(VfsMediatorConfigConstants.ATT_SFTP_TIMEOUT.getLocalPart(), synNS);
+            sftpTimeout.addAttribute(ATT_VALUE, mediator.getSftpTimeoutValue().toString(), nullNS);
+            element.addChild(sftpTimeout);
+        }
+
         return element;
     }
 

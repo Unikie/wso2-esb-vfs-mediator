@@ -33,5 +33,5 @@ public class VfsMediatorConfigConstants {
     public static final QName ATT_LOCK_ENABLED = new QName(NAMESPACE_STRING, "lockEnabled");
     public static final QName ATT_STREAMING_TRANSFER = new QName(NAMESPACE_STRING, "streamingTransfer");
     public static final QName ATT_STREAMING_BLOCK_SIZE = new QName(NAMESPACE_STRING, "streamingBlockSize");
-
+    public static final QName ATT_SFTP_TIMEOUT = new QName(NAMESPACE_STRING, "sftpTimeout");
 }
