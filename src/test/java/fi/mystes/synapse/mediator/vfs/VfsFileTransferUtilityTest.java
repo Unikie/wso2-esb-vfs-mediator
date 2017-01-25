@@ -28,6 +28,7 @@ import org.mockito.stubbing.Answer;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.List;
 
 import static fi.mystes.synapse.mediator.vfs.VFSTestHelper.*;
 import static org.junit.Assert.assertEquals;
@@ -293,6 +294,51 @@ public class VfsFileTransferUtilityTest {
         assertFilesExists(ARCHIVE_DIR, 10);
         assertEquals("Utility returned false file copied count", 10, copyCount);
     }
+
+    @Test
+    public void targetFilenamePrefixAdded() throws Exception {
+        createTestFiles(SOURCE_DIR, 1);
+
+        int copyCount = new VfsFileTransferUtility((VfsOperationOptions.with().sourceDirectory(SOURCE_DIR).targetDirectory(TARGET_DIR).createMissingDirectories(true).targetFilePrefix("testprefix_")).build()).copyFiles();
+
+        assertFileExists(TARGET_DIR + "/" + "testprefix_test0.txt");
+        assertEquals("Utility returned wrong copied file count", 1, copyCount);
+    }
+
+    @Test
+    public void targetFilenameSuffixAdded() throws Exception {
+        createTestFiles(SOURCE_DIR, 1);
+
+        int copyCount = new VfsFileTransferUtility((VfsOperationOptions.with().sourceDirectory(SOURCE_DIR).targetDirectory(TARGET_DIR).createMissingDirectories(true).targetFileSuffix("_suffixtest")).build()).copyFiles();
+
+        assertFileExists(TARGET_DIR + "/" + "test0_suffixtest.txt");
+        assertEquals("Utility returned wrong copied file count", 1, copyCount);
+    }
+
+    @Test
+    public void archiveFilenamePrefixAdded() throws Exception {
+        createTestFiles(SOURCE_DIR, 2);
+
+        int copyCount = new VfsFileTransferUtility(VfsOperationOptions.with().sourceDirectory(SOURCE_DIR).targetDirectory(TARGET_DIR).archiveDirectory(ARCHIVE_DIR).createMissingDirectories(true).archiveFilePrefix("archived_").build()).moveFiles();
+
+        assertFileExists(ARCHIVE_DIR + "/" + "archived_test0.txt");
+        assertFileExists(ARCHIVE_DIR + "/" + "archived_test1.txt");
+
+        assertEquals("Utility returned wrong copied file count", 2, copyCount);
+    }
+
+    @Test
+    public void archiveFilenameSuffixAdded() throws Exception {
+        createTestFiles(SOURCE_DIR, 2);
+
+        int copyCount = new VfsFileTransferUtility(VfsOperationOptions.with().sourceDirectory(SOURCE_DIR).targetDirectory(TARGET_DIR).archiveDirectory(ARCHIVE_DIR).createMissingDirectories(true).archiveFileSuffix("_archivedxx").build()).moveFiles();
+
+        assertFileExists(ARCHIVE_DIR + "/" + "test0_archivedxx.txt");
+        assertFileExists(ARCHIVE_DIR + "/" + "test1_archivedxx.txt");
+
+        assertEquals("Utility returned wrong copied file count", 2, copyCount);
+    }
+
 
     private String expectedFolderNotExistsErrorString(String folder) {
         return "Path " + folder + " is not a folder!";

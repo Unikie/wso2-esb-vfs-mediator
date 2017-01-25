@@ -17,6 +17,10 @@ Vfs Mediator is a custom WSO2 ESB mediator for copy/move file operations. It use
 | **lockEnabled** | true/false | If true, VfsMediator creates a lock file (<filename>.lock) in the target directory to indicate to other VfsMediator (or ESB VFS proxy) instances that file is still being written. The default value is true. | No |
 | **streamingTransfer** | true/false | If true, VfsMediator transfers files in streaming mode. This might be useful with large payloads. The default value is false. | No |
 | **streamingBlockSize** | Integer | This value defines the buffer block size for streaming transfer. The default value is "1024" (bytes). | No |
+| **targetFilenamePrefix** | String | When `value` or `expression` attribute is set, uses it as a filename prefix when copying/moving the file to the target directory. | No | 
+| **targetFilenameSuffix** | String | When `value` or `expression` attribute is set, uses it as a filename suffix when copying/moving the file to the target directory. | No |
+| **archiveFilenamePrefix** | String | When `value` or `expression` attribute is set, uses it as a filename prefix when archiving the file to the archive directory. | No |
+| **archiveFilenameSuffix** | String | When `value` or `expression` attribute is set, uses it as a filename suffix when archiving the file to the archive directory. | No |
 
 #### File system specific options
 These options are not specified in mediator configuration as they are applicable to certain file systems only. Instead, they are configured using properties synapse message context ($ctx) scope. The properties must be applied before VFS mediator is used.
