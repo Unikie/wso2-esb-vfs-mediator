@@ -16,11 +16,13 @@
 package fi.mystes.synapse.mediator.serializer;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 
+import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 
 import org.apache.axiom.om.OMElement;
@@ -145,6 +147,51 @@ public class VfsMediatorSerializerTest {
         OMElement expected = getDocumentElementFromResourcePath("/serializedVfsMediatorWithStreamingTransferEnabledWithBlockSizeXPath.xml");
         assertEquals(expected.toString(), element.toString());
     }
+
+    @Test
+    public void serializeWithArchiveSuffixExpression() throws Exception {
+        VfsMediatorSerializer serializer = getDefaultSerializer();
+        VfsMediator mediator = getDefaultMediator();
+        mediator.setArchiveFilenameSuffixXpath(new SynapseXPath("string('xpath-value!')"));
+        OMElement element = serializer.serializeSpecificMediator(mediator);
+        OMElement archiveSuffixElement = element.getFirstChildWithName(new QName("http://ws.apache.org/ns/synapse", "archiveFilenameSuffix"));
+        assertNotNull(archiveSuffixElement);
+        assertEquals("string('xpath-value!')", archiveSuffixElement.getAttributeValue(new QName("expression")));
+    }
+
+    @Test
+    public void serializeWithTargetSuffixExpression() throws Exception {
+        VfsMediatorSerializer serializer = getDefaultSerializer();
+        VfsMediator mediator = getDefaultMediator();
+        mediator.setTargetFilenameSuffixXpath(new SynapseXPath("string('this-is-xpath-string')"));
+        OMElement element = serializer.serializeSpecificMediator(mediator);
+        OMElement targetSuffixElement = element.getFirstChildWithName(new QName("http://ws.apache.org/ns/synapse", "targetFilenameSuffix"));
+        assertNotNull(targetSuffixElement);
+        assertEquals("string('this-is-xpath-string')", targetSuffixElement.getAttributeValue(new QName("expression")));
+    }
+
+    @Test
+    public void serializeWithTargetPrefixValue() throws Exception {
+        VfsMediatorSerializer serializer = getDefaultSerializer();
+        VfsMediator mediator = getDefaultMediator();
+        mediator.setTargetFilenamePrefixValue("valuevalue_");
+        OMElement element = serializer.serializeSpecificMediator(mediator);
+        OMElement targetPrefixElement = element.getFirstChildWithName(new QName("http://ws.apache.org/ns/synapse", "targetFilenamePrefix"));
+        assertNotNull(targetPrefixElement);
+        assertEquals("valuevalue_", targetPrefixElement.getAttributeValue(new QName("value")));
+    }
+
+    @Test
+    public void serializeWithTargetSuffixValue() throws Exception {
+        VfsMediatorSerializer serializer = getDefaultSerializer();
+        VfsMediator mediator = getDefaultMediator();
+        mediator.setTargetFilenameSuffixValue("valvalval");
+        OMElement element = serializer.serializeSpecificMediator(mediator);
+        OMElement targetPrefixElement = element.getFirstChildWithName(new QName("http://ws.apache.org/ns/synapse", "targetFilenameSuffix"));
+        assertNotNull(targetPrefixElement);
+        assertEquals("valvalval", targetPrefixElement.getAttributeValue(new QName("value")));
+    }
+
 
     private VfsMediator getDefaultMediator() {
         VfsMediator mediator = new VfsMediator();
