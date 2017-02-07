@@ -521,6 +521,7 @@ public class VfsFileTransferUtility {
                         throw e;
                     }
                     retry = true;
+                    retries++;
                     try {
                         Thread.sleep(retryWait);
                     } catch (InterruptedException ignored) { retry = false;}
