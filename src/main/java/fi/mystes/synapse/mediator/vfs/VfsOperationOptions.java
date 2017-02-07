@@ -29,6 +29,8 @@ public final class VfsOperationOptions {
     private final boolean lockEnabled;
     private final boolean ftpPassiveMode;
     private final boolean streamingTransfer;
+    private final int retryCount;
+    private final int retryWait;
 
     /**
      * Class constructor.
@@ -56,7 +58,7 @@ public final class VfsOperationOptions {
      */
     public VfsOperationOptions(String sourceDirectory, String targetDirectory, String filePatternRegex,
             String archiveDirectory, boolean createMissingDirectories, boolean lockEnabled, boolean ftpPassiveMode,
-            boolean streamingTransfer, String streamingBlockSize) {
+            boolean streamingTransfer, String streamingBlockSize, int retryCount, int retryWait) {
         this.sourceDirectory = sourceDirectory;
         this.targetDirectory = targetDirectory;
         this.filePatternRegex = filePatternRegex;
@@ -66,6 +68,8 @@ public final class VfsOperationOptions {
         this.ftpPassiveMode = ftpPassiveMode;
         this.streamingTransfer = streamingTransfer;
         this.streamingBlockSize = streamingBlockSize;
+        this.retryCount = retryCount;
+        this.retryWait = retryWait;
     }
 
     /**
@@ -132,6 +136,23 @@ public final class VfsOperationOptions {
      */
     public boolean isLockEnabled() {
         return lockEnabled;
+    }
+
+    /**
+     * Returns the retry count.
+     * @return
+     */
+    public int getRetryCount() {
+        return this.retryCount;
+    }
+
+    /**
+     * Returns the retry wait.
+     *
+     * @return
+     */
+    public int getRetryWait() {
+        return this.retryWait;
     }
 
     /**
@@ -311,6 +332,22 @@ public final class VfsOperationOptions {
          */
         Builder streamingBlockSize(String streamingBlockSize);
 
+        /**
+         * Setter for retry count.
+         *
+         * @param retryCount
+         * @return
+         */
+        Builder retryCount(int retryCount);
+
+        /**
+         * Setter for retry wait time.
+         *
+         * @param retryWait
+         * @return
+         */
+        Builder retryWait(int retryWait);
+
     }
 
     /**
@@ -327,11 +364,14 @@ public final class VfsOperationOptions {
         private boolean lockEnabled;
         private boolean ftpPassiveMode;
         private boolean streamingTransfer;
+        private int retryCount;
+        private int retryWait;
 
         @Override
         public VfsOperationOptions build() {
             return new VfsOperationOptions(sourceDirectory, targetDirectory, filePatternRegex, archiveDirectory,
-                    createMissingDirectories, lockEnabled, ftpPassiveMode, streamingTransfer, streamingBlockSize);
+                    createMissingDirectories, lockEnabled, ftpPassiveMode, streamingTransfer, streamingBlockSize,
+                    retryCount, retryWait);
         }
 
         @Override
@@ -365,6 +405,20 @@ public final class VfsOperationOptions {
         @Override
         public Builder streamingBlockSize(String streamingBlockSize) {
             this.streamingBlockSize = streamingBlockSize;
+
+            return this;
+        }
+
+        @Override
+        public Builder retryCount(int retryCount) {
+            this.retryCount = retryCount;
+
+            return this;
+        }
+
+        @Override
+        public Builder retryWait(int retryWait) {
+            this.retryWait = retryWait;
 
             return this;
         }

@@ -50,6 +50,8 @@ public class VfsMediator extends AbstractMediator {
     private Boolean lockEnabledValue;
     private boolean streamingTransferValue;
     private String streamingBlockSizeValue;
+    private int retryCount;
+    private int retryWait;
 
     private SynapseXPath filePatternXpath;
     private SynapseXPath operationXpath;
@@ -71,7 +73,7 @@ public class VfsMediator extends AbstractMediator {
      * if mediation should continue, or false if further mediation should be
      * aborted.
      *
-     * @param context
+     * @param messageContext
      *            Current message context for mediation
      * @return true if further mediation should continue, otherwise false
      */
@@ -492,6 +494,8 @@ public class VfsMediator extends AbstractMediator {
         op.setStreamingBlockSize(resolveStreamingBlockSize(messageContext));
         boolean ftpPassiveMode = isFtpPassiveModeEnabled(messageContext);
         op.setFtpPassiveMode(ftpPassiveMode);
+        op.setRetryCount(this.retryCount);
+        op.setRetryWait(this.retryWait);
 
         return op;
     }
@@ -710,5 +714,21 @@ public class VfsMediator extends AbstractMediator {
         }
         getLog(messageContext).traceOrDebug("VfsMediator: Resolving resulted in null");
         return null;
+    }
+
+    public int getRetryCount() {
+        return retryCount;
+    }
+
+    public void setRetryCount(int retryCount) {
+        this.retryCount = retryCount;
+    }
+
+    public int getRetryWait() {
+        return retryWait;
+    }
+
+    public void setRetryWait(int retryWait) {
+        this.retryWait = retryWait;
     }
 }

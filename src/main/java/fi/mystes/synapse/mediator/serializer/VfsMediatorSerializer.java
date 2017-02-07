@@ -140,7 +140,22 @@ public class VfsMediatorSerializer extends AbstractMediatorSerializer {
             element.addChild(lockEnabled);
         }
 
+        handleRetry(mediator, element);
+
         return element;
+    }
+
+    private void handleRetry(VfsMediator mediator, OMElement element) {
+        if(mediator.getRetryCount() == VfsMediatorConfigConstants.DEFAULT_RETRY_COUNT &&
+                mediator.getRetryWait() == VfsMediatorConfigConstants.DEFAULT_RETRY_WAIT) {
+            return;
+        }
+
+        OMElement retryElement = fac.createOMElement(VfsMediatorConfigConstants.ELEM_RETRY);
+        retryElement.addAttribute(VfsMediatorConfigConstants.ATT_RETRY_COUNT.getLocalPart(), Integer.toString(mediator.getRetryCount()), nullNS);
+        retryElement.addAttribute(VfsMediatorConfigConstants.ATT_RETRY_WAIT.getLocalPart(), Integer.toString(mediator.getRetryWait()), nullNS);
+
+        element.addChild(retryElement);
     }
 
     /**

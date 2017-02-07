@@ -33,6 +33,8 @@ public abstract class AbstractVfsOperation implements VfsOperation {
     private boolean streamingTransfer;
     private boolean lockEnabled;
     private boolean ftpPassiveMode;
+    private int retryCount;
+    private int retryWait;
 
     /**
      * Setter for operation delegate instance.
@@ -122,6 +124,16 @@ public abstract class AbstractVfsOperation implements VfsOperation {
     @Override
     public void setFtpPassiveMode(boolean ftpPassiveMode) {
         this.ftpPassiveMode = ftpPassiveMode;
+    }
+
+    @Override
+    public void setRetryCount(int retryCount) {
+        this.retryCount = retryCount;
+    }
+
+    @Override
+    public void setRetryWait(int retryWait) {
+        this.retryWait = retryWait;
     }
 
     /**

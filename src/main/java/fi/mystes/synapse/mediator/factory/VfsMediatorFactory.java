@@ -78,6 +78,8 @@ public class VfsMediatorFactory extends AbstractMediatorFactory {
 
         handleStreamingBlockSizeElement(omElement, mediator);
 
+        handleRetryElement(omElement, mediator);
+
         return mediator;
     }
 
@@ -105,6 +107,27 @@ public class VfsMediatorFactory extends AbstractMediatorFactory {
                 String value = lockEnabledElement.getAttributeValue(ATT_VALUE);
                 mediator.setLockEnabledValue(Boolean.valueOf(value));
             }
+        }
+    }
+
+    private void handleRetryElement(OMElement omElement, VfsMediator mediator) {
+        OMElement retryElement = omElement.getFirstChildWithName(VfsMediatorConfigConstants.ELEM_RETRY);
+
+        if(retryElement == null) {
+            mediator.setRetryCount(VfsMediatorConfigConstants.DEFAULT_RETRY_COUNT);
+            mediator.setRetryWait(VfsMediatorConfigConstants.DEFAULT_RETRY_WAIT);
+
+            return;
+        }
+
+        try {
+            int retryCount = Integer.parseInt(retryElement.getAttributeValue(VfsMediatorConfigConstants.ATT_RETRY_COUNT));
+            int retryWait = Integer.parseInt(retryElement.getAttributeValue(VfsMediatorConfigConstants.ATT_RETRY_WAIT));
+
+            mediator.setRetryCount(retryCount);
+            mediator.setRetryWait(retryWait);
+        } catch (Exception e) {
+            handleException("Failed to parse retry count or wait attribute.", e);
         }
     }
 

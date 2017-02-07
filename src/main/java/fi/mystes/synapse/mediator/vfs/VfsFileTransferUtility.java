@@ -89,25 +89,41 @@ public class VfsFileTransferUtility {
      * @throws FileSystemException
      *             If file listing fails
      */
-    private FileObject[] listFiles(String sourceDirectoryPath, String filePatternRegex) throws FileSystemException {
-        FileObject fromDirectory = resolveFile(sourceDirectoryPath);
-        log.debug("Source directory: " + fileObjectNameForDebug(fromDirectory));
-        // check that both of the parameters are folders
-        isFolder(fromDirectory);
+    private FileObject[] listFiles(String sourceDirectoryPath, final String filePatternRegex) throws FileSystemException {
+        final FileObject fromDirectory = resolveFile(sourceDirectoryPath);
+        FileObject[] fileList = null;
 
-        FileObject[] fileList;
-        // if file pattern exists, get files from folder according to that
-        if (filePatternRegex != null) {
-            log.debug("Applying file pattern " + filePatternRegex);
-            FileFilter ff = initFileFilter(filePatternRegex);
-            fileList = fromDirectory.findFiles(new FileFilterSelector(ff));
-        } else {
-            // List all the files in that directory and copy each
-            fileList = fromDirectory.getChildren();
+        try {
+            log.debug("Source directory: " + fileObjectNameForDebug(fromDirectory));
+            // check that both of the parameters are folders
+            isFolder(fromDirectory);
+
+            Retrier<FileObject[]> retrier = new Retrier<FileObject[]>() {
+                @Override
+                public FileObject[] operation() throws FileSystemException {
+                    FileObject[] fileListRet = null;
+                    if (filePatternRegex != null) {
+                        log.debug("Applying file pattern " + filePatternRegex);
+                        FileFilter ff = initFileFilter(filePatternRegex);
+                        fileListRet = fromDirectory.findFiles(new FileFilterSelector(ff));
+                    } else {
+                        // List all the files in that directory and copy each
+                        fileListRet = fromDirectory.getChildren();
+                    }
+                    log.debug("Found " + fileListRet.length + " files in source directory");
+
+                    return fileListRet;
+                }
+            };
+
+            fileList = retrier.doWithRetry(options.getRetryCount(), options.getRetryWait());
+
+        } finally {
+            try {
+                fromDirectory.close();
+            } catch (Exception ignored) {}
         }
 
-        fromDirectory.close();
-        log.debug("Found " + fileList.length + " files in source directory");
         return fileList;
     }
 
@@ -125,24 +141,38 @@ public class VfsFileTransferUtility {
      * @throws FileSystemException
      *             If file copy operation fails
      */
-    private boolean copyFile(FileObject file, String targetDirectoryPath, boolean lockEnabled)
+    private boolean copyFile(final FileObject file, String targetDirectoryPath, boolean lockEnabled)
             throws FileSystemException {
         if (file.getType() == FileType.FILE) {
-            String targetPath = targetDirectoryPath + "/" + file.getName().getBaseName();
+            final String targetPath = targetDirectoryPath + "/" + file.getName().getBaseName();
             String lockFilePath = null;
             if (lockEnabled) {
                 lockFilePath = createLockFile(targetPath);
             }
-            FileObject newLocation = resolveFile(targetPath);
+
+            final FileObject newLocation = new Retrier<FileObject>() {
+                @Override
+                public FileObject operation() throws FileSystemException {
+                    return resolveFile(targetPath);
+                }
+            }.doWithRetry(options.getRetryCount(), options.getRetryWait());
+
             try {
                 log.debug(
                         "About to copy " + fileObjectNameForDebug(file) + " to " + fileObjectNameForDebug(newLocation));
 
                 if(options.isStreamingTransferEnabled()) {
+                    // TODO: Should we use the retrier for this?
                     streamFromFileToFile(file, resolveFile(targetPath));
                 }
                 else{
-                    newLocation.copyFrom(file, Selectors.SELECT_SELF);
+                    new Retrier<Object>() {
+                        @Override
+                        public Object operation() throws FileSystemException {
+                            newLocation.copyFrom(file, Selectors.SELECT_SELF);
+                            return null;
+                        }
+                    }.doWithRetry(options.getRetryCount(), options.getRetryWait());
                 }
 
                 newLocation.close();
@@ -236,23 +266,35 @@ public class VfsFileTransferUtility {
      * @throws FileSystemException
      *             If file move operation fails
      */
-    private boolean moveFile(FileObject file, String toDirectoryPath, boolean lockEnabled) throws FileSystemException {
+    private boolean moveFile(final FileObject file, String toDirectoryPath, boolean lockEnabled) throws FileSystemException {
         if (file.getType() == FileType.FILE) {
-            String targetPath = toDirectoryPath + "/" + file.getName().getBaseName();
+            final String targetPath = toDirectoryPath + "/" + file.getName().getBaseName();
             String lockFilePath = null;
             if (lockEnabled) {
                 lockFilePath = createLockFile(targetPath);
             }
-            FileObject newLocation = resolveFile(targetPath);
+            final FileObject newLocation = new Retrier<FileObject>() {
+                @Override
+                public FileObject operation() throws FileSystemException {
+                    return resolveFile(targetPath);
+                }
+            }.doWithRetry(options.getRetryCount(), options.getRetryWait());
+
             try {
                 log.debug(
                         "About to move " + fileObjectNameForDebug(file) + " to " + fileObjectNameForDebug(newLocation));
 
                 if(options.isStreamingTransferEnabled()) {
-                    streamFromFileToFile(file, resolveFile(targetPath));
+                    streamFromFileToFile(file, resolveFile(targetPath)); // TODO TODO could fail. What if we fail during streaming and continue? Do we get targetFile which has the first streamed fragment and then the whole file again?
                 }
                 else{
-                    newLocation.copyFrom(file, Selectors.SELECT_SELF);
+                    new Retrier<Object>() {
+                        @Override
+                        public Object operation() throws FileSystemException {
+                            newLocation.copyFrom(file, Selectors.SELECT_SELF); // could fail
+                            return null;
+                        }
+                    }.doWithRetry(options.getRetryCount(), options.getRetryWait());
                 }
 
                 newLocation.close();
@@ -461,6 +503,34 @@ public class VfsFileTransferUtility {
      */
     private enum Operation {
         MOVE, COPY
+    }
+
+    private abstract class Retrier<T> {
+        protected final VfsFileTransferUtility utility = VfsFileTransferUtility.this;
+
+        public T doWithRetry(int retryCount, int retryWait) throws FileSystemException {
+            boolean retry = false;
+            int retries = 0;
+            T ret = null;
+            do {
+                try {
+                    ret = operation();
+                    retry = false;
+                } catch (FileSystemException e) {
+                    if(retries >= retryCount) {
+                        throw e;
+                    }
+                    retry = true;
+                    try {
+                        Thread.sleep(retryWait);
+                    } catch (InterruptedException ignored) { retry = false;}
+                }
+            } while (retry);
+
+            return ret;
+        }
+
+        public abstract T operation() throws FileSystemException;
     }
 
 }

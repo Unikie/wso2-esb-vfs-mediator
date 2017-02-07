@@ -113,4 +113,18 @@ public interface VfsOperation {
      */
     void setFtpPassiveMode(boolean ftpPassiveMode);
 
+    /**
+     * Sets the retry count.
+     *
+     * @param retryCount
+     */
+    void setRetryCount(int retryCount);
+
+    /**
+     * Sets the retry wait time in milliseconds.
+     *
+     * @param retryWait
+     */
+    void setRetryWait(int retryWait);
+
 }
