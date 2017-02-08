@@ -294,6 +294,27 @@ public class VfsFileTransferUtilityTest {
         assertEquals("Utility returned false file copied count", 10, copyCount);
     }
 
+    @Test
+    public void testRetryCopy() throws Exception {
+/*
+        createTestFiles(SOURCE_DIR, 1);
+
+        int copyCount = new VfsFileTransferUtility(VfsOperationOptions.with().sourceDirectory(SOURCE_DIR).targetDirectory(TARGET_DIR).createMissingDirectories(true).retryCount(10).retryWait(2000).build()).copyFiles();
+
+        assertEquals("Utility returned wrong file copied count", 1, copyCount);
+*/
+    }
+
+    @Test
+    public void testRetryMove() {
+
+    }
+
+    @Test
+    public void testRetryRead() {
+
+    }
+
     private String expectedFolderNotExistsErrorString(String folder) {
         return "Path " + folder + " is not a folder!";
     }
