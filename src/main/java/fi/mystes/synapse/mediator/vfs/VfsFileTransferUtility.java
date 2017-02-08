@@ -18,7 +18,9 @@ package fi.mystes.synapse.mediator.vfs;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.vfs2.*;
+import org.apache.commons.vfs2.impl.StandardFileSystemManager;
 import org.apache.commons.vfs2.provider.ftp.FtpFileSystemConfigBuilder;
+import org.apache.commons.vfs2.provider.sftp.SftpFileSystemConfigBuilder;
 import org.apache.synapse.SynapseException;
 
 import java.io.IOException;
@@ -54,6 +56,8 @@ public class VfsFileTransferUtility {
         if (options.isFtpPassiveModeEnabled()) {
             FtpFileSystemConfigBuilder.getInstance().setPassiveMode(fsOptions, true);
         }
+
+        SftpFileSystemConfigBuilder.getInstance().setTimeout(fsOptions, options.getSftpTimeout());
     }
 
     /**
@@ -89,8 +93,8 @@ public class VfsFileTransferUtility {
      * @throws FileSystemException
      *             If file listing fails
      */
-    private FileObject[] listFiles(String sourceDirectoryPath, final String filePatternRegex) throws FileSystemException {
-        final FileObject fromDirectory = resolveFile(sourceDirectoryPath);
+    private FileObject[] listFiles(FileSystemManager manager, String sourceDirectoryPath, final String filePatternRegex) throws FileSystemException {
+        final FileObject fromDirectory = resolveFile(manager, sourceDirectoryPath);
         FileObject[] fileList = null;
 
         try {
@@ -141,19 +145,20 @@ public class VfsFileTransferUtility {
      * @throws FileSystemException
      *             If file copy operation fails
      */
-    private boolean copyFile(final FileObject file, String targetDirectoryPath, boolean lockEnabled)
+    private boolean copyFile(final FileSystemManager manager, final FileObject file, String targetDirectoryPath, boolean lockEnabled)
             throws FileSystemException {
         if (file.getType() == FileType.FILE) {
             final String targetPath = targetDirectoryPath + "/" + file.getName().getBaseName();
             String lockFilePath = null;
             if (lockEnabled) {
-                lockFilePath = createLockFile(targetPath);
+                lockFilePath = createLockFile(manager, targetPath);
             }
+
 
             final FileObject newLocation = new Retrier<FileObject>() {
                 @Override
                 public FileObject operation() throws FileSystemException {
-                    return resolveFile(targetPath);
+                    return resolveFile(manager, targetPath);
                 }
             }.doWithRetry(options.getRetryCount(), options.getRetryWait());
 
@@ -163,7 +168,7 @@ public class VfsFileTransferUtility {
 
                 if(options.isStreamingTransferEnabled()) {
                     // TODO: Should we use the retrier for this?
-                    streamFromFileToFile(file, resolveFile(targetPath));
+                    streamFromFileToFile(file, resolveFile(manager, targetPath));
                 }
                 else{
                     new Retrier<Object>() {
@@ -180,7 +185,7 @@ public class VfsFileTransferUtility {
                 log.debug("File copied to " + fileObjectNameForDebug(newLocation));
             } finally {
                 if (lockFilePath != null) {
-                    deleteLockFile(lockFilePath);
+                    deleteLockFile(manager, lockFilePath);
                 }
             }
             return true;
@@ -217,41 +222,53 @@ public class VfsFileTransferUtility {
      *             If given file operation fails
      */
     private int doOperation(Operation operation) throws FileSystemException {
-        FileObject toDirectory = resolveFile(options.getTargetDirectory());
-        log.debug("Starting operation " + operation + ", target directory: " + fileObjectNameForDebug(toDirectory));
-        validateFolder(toDirectory, options.isCreateMissingDirectories());
+        FileSystemManager manager = null;
+        try {
+            manager = initManager();
+            assert manager != null;
+            FileObject toDirectory = resolveFile(manager, options.getTargetDirectory());
+            log.debug("Starting operation " + operation + ", target directory: " + fileObjectNameForDebug(toDirectory));
+            validateFolder(toDirectory, options.isCreateMissingDirectories());
 
-        if (options.getArchiveDirectory() != null) {
-            FileObject archiveDir = resolveFile(options.getArchiveDirectory());
-            log.debug("Using archive directory: " + fileObjectNameForDebug(archiveDir));
-            validateFolder(archiveDir, options.isCreateMissingDirectories());
-        }
-
-        FileObject[] children = listFiles(options.getSourceDirectory(), options.getFilePatternRegex());
-        int fileProcessed = 0;
-        for (int i = 0; i < children.length; i++) {
-            log.debug("Processing file #" + (i + 1));
-            // archive file here first before processing it
             if (options.getArchiveDirectory() != null) {
-                log.debug("Copying file to archive directory");
-                copyFile(children[i], options.getArchiveDirectory(), options.isLockEnabled());
-            }
-            if (operation == Operation.MOVE) {
-                if (moveFile(children[i], options.getTargetDirectory(), options.isLockEnabled())) {
-                    // FileObject was copied successfully
-                    fileProcessed++;
-                }
-            } else if (operation == Operation.COPY) {
-                if (copyFile(children[i], options.getTargetDirectory(), options.isLockEnabled())) {
-                    // FileObject was copied successfully
-                    fileProcessed++;
-                }
-            } else {
-                // unsupported operation
+                FileObject archiveDir = resolveFile(manager, options.getArchiveDirectory());
+                log.debug("Using archive directory: " + fileObjectNameForDebug(archiveDir));
+                validateFolder(archiveDir, options.isCreateMissingDirectories());
+                archiveDir.close();
             }
 
+            FileObject[] children = listFiles(manager, options.getSourceDirectory(), options.getFilePatternRegex());
+            int fileProcessed = 0;
+            for (int i = 0; i < children.length; i++) {
+                log.debug("Processing file #" + (i + 1));
+                // archive file here first before processing it
+                if (options.getArchiveDirectory() != null) {
+                    log.debug("Copying file to archive directory");
+                    copyFile(manager, children[i], options.getArchiveDirectory(), options.isLockEnabled());
+                }
+                if (operation == Operation.MOVE) {
+                    if (moveFile(manager, children[i], options.getTargetDirectory(), options.isLockEnabled())) {
+                        // FileObject was copied successfully
+                        fileProcessed++;
+                    }
+                } else if (operation == Operation.COPY) {
+                    if (copyFile(manager, children[i], options.getTargetDirectory(), options.isLockEnabled())) {
+                        // FileObject was copied successfully
+                        fileProcessed++;
+                    }
+                } else {
+                    // unsupported operation
+                }
+
+            }
+            toDirectory.close();
+
+            return fileProcessed;
+        } finally {
+            if(manager != null) {
+                ((StandardFileSystemManager) manager).close();
+            }
         }
-        return fileProcessed;
     }
 
     /**
@@ -266,17 +283,18 @@ public class VfsFileTransferUtility {
      * @throws FileSystemException
      *             If file move operation fails
      */
-    private boolean moveFile(final FileObject file, String toDirectoryPath, boolean lockEnabled) throws FileSystemException {
+    private boolean moveFile(final FileSystemManager manager, final FileObject file, String toDirectoryPath, boolean lockEnabled) throws FileSystemException {
         if (file.getType() == FileType.FILE) {
             final String targetPath = toDirectoryPath + "/" + file.getName().getBaseName();
             String lockFilePath = null;
             if (lockEnabled) {
-                lockFilePath = createLockFile(targetPath);
+                lockFilePath = createLockFile(manager, targetPath);
             }
+
             final FileObject newLocation = new Retrier<FileObject>() {
                 @Override
                 public FileObject operation() throws FileSystemException {
-                    return resolveFile(targetPath);
+                    return resolveFile(manager, targetPath);
                 }
             }.doWithRetry(options.getRetryCount(), options.getRetryWait());
 
@@ -285,7 +303,7 @@ public class VfsFileTransferUtility {
                         "About to move " + fileObjectNameForDebug(file) + " to " + fileObjectNameForDebug(newLocation));
 
                 if(options.isStreamingTransferEnabled()) {
-                    streamFromFileToFile(file, resolveFile(targetPath)); // TODO TODO could fail. What if we fail during streaming and continue? Do we get targetFile which has the first streamed fragment and then the whole file again?
+                    streamFromFileToFile(file, resolveFile(manager, targetPath)); // TODO TODO could fail. What if we fail during streaming and continue? Do we get targetFile which has the first streamed fragment and then the whole file again?
                 }
                 else{
                     new Retrier<Object>() {
@@ -303,7 +321,7 @@ public class VfsFileTransferUtility {
                 log.debug("File moved to " + fileObjectNameForDebug(newLocation));
             } finally {
                 if (lockFilePath != null) {
-                    deleteLockFile(lockFilePath);
+                    deleteLockFile(manager, lockFilePath);
                 }
             }
             return true;
@@ -322,8 +340,8 @@ public class VfsFileTransferUtility {
      * @throws FileSystemException
      *             If lock file creation fails
      */
-    private String createLockFile(String targetPath) throws FileSystemException {
-        FileObject lockFile = resolveFile(lockFilePath(targetPath));
+    private String createLockFile(FileSystemManager manager, String targetPath) throws FileSystemException {
+        FileObject lockFile = resolveFile(manager, lockFilePath(targetPath));
         log.debug("About to create lock file: " + fileObjectNameForDebug(lockFile));
         if (lockFile.exists()) {
             throw new FileSystemException(
@@ -411,8 +429,8 @@ public class VfsFileTransferUtility {
      * @throws FileSystemException
      *             If lock file deletion fails
      */
-    private void deleteLockFile(String lockFilePath) throws FileSystemException {
-        FileObject lockFile = resolveFile(lockFilePath);
+    private void deleteLockFile(FileSystemManager manager, String lockFilePath) throws FileSystemException {
+        FileObject lockFile = resolveFile(manager, lockFilePath);
         log.debug("Deleting lock file: " + fileObjectNameForDebug(lockFile));
         lockFile.delete();
         lockFile.close();
@@ -494,8 +512,8 @@ public class VfsFileTransferUtility {
      * @throws FileSystemException
      *             If resolving file fails
      */
-    private FileObject resolveFile(String path) throws FileSystemException {
-        return VFS.getManager().resolveFile(path, fsOptions);
+    private FileObject resolveFile(FileSystemManager manager, String path) throws FileSystemException {
+        return manager.resolveFile(path, fsOptions);
     }
 
     /**
@@ -504,6 +522,14 @@ public class VfsFileTransferUtility {
     private enum Operation {
         MOVE, COPY
     }
+
+    private FileSystemManager initManager() throws FileSystemException {
+        StandardFileSystemManager manager = new StandardFileSystemManager();
+        manager.init();
+
+        return manager;
+    }
+
 
     private abstract class Retrier<T> {
         protected final VfsFileTransferUtility utility = VfsFileTransferUtility.this;
@@ -517,14 +543,16 @@ public class VfsFileTransferUtility {
                     ret = operation();
                     retry = false;
                 } catch (FileSystemException e) {
-                    if(retries >= retryCount) {
+                    if (retries >= retryCount) {
                         throw e;
                     }
                     retry = true;
                     retries++;
                     try {
                         Thread.sleep(retryWait);
-                    } catch (InterruptedException ignored) { retry = false;}
+                    } catch (InterruptedException ignored) {
+                        retry = false;
+                    }
                 }
             } while (retry);
 
@@ -532,6 +560,7 @@ public class VfsFileTransferUtility {
         }
 
         public abstract T operation() throws FileSystemException;
+
     }
 
 }

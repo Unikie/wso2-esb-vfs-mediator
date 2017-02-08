@@ -35,6 +35,7 @@ public abstract class AbstractVfsOperation implements VfsOperation {
     private boolean ftpPassiveMode;
     private int retryCount;
     private int retryWait;
+    private int sftpTimeout;
 
     /**
      * Setter for operation delegate instance.
@@ -136,6 +137,12 @@ public abstract class AbstractVfsOperation implements VfsOperation {
         this.retryWait = retryWait;
     }
 
+    @Override
+    public void setSftpTimeout(int sftpTimeout) {
+        this.sftpTimeout = sftpTimeout;
+    }
+
+
     /**
      * Interface method to be implemented by subclasses.
      * 
@@ -174,6 +181,6 @@ public abstract class AbstractVfsOperation implements VfsOperation {
                 .filePatternRegex(filePattern).archiveDirectory(archiveDirectory)
                 .createMissingDirectories(createMissingDirectories).lockEnabled(lockEnabled)
                 .ftpPassiveModeEnabled(ftpPassiveMode).streamingTransferEnabled(streamingTransfer)
-                .streamingBlockSize(streamingBlockSize).build();
+                .streamingBlockSize(streamingBlockSize).retryCount(retryCount).retryWait(retryWait).sftpTimeout(sftpTimeout).build();
     }
 }

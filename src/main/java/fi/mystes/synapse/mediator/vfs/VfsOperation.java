@@ -127,4 +127,5 @@ public interface VfsOperation {
      */
     void setRetryWait(int retryWait);
 
+    void setSftpTimeout(int sftpTimeout);
 }

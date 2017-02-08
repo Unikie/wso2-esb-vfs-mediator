@@ -53,6 +53,7 @@ public class VfsMediator extends AbstractMediator {
     private String streamingBlockSizeValue;
     private int retryCount = VfsMediatorConfigConstants.DEFAULT_RETRY_COUNT;
     private int retryWait = VfsMediatorConfigConstants.DEFAULT_RETRY_WAIT;
+    private Integer sftpTimeoutValue;
 
     private SynapseXPath filePatternXpath;
     private SynapseXPath operationXpath;
@@ -465,6 +466,28 @@ public class VfsMediator extends AbstractMediator {
     }
 
     /**
+     * Setter for SFTP timeout value.
+     *
+     * @param value
+     */
+    public void setSftpTimeoutValue(Integer value) {
+        this.sftpTimeoutValue = value;
+    }
+
+    /**
+     * Getter for SFTP timeout value.
+     *
+     * @return
+     */
+    public Integer getSftpTimeoutValue() {
+        if(this.sftpTimeoutValue == null) {
+            return VfsMediatorConfigConstants.DEFAULT_SFTP_TIMEOUT;
+        }
+
+        return this.sftpTimeoutValue;
+    }
+
+    /**
      * Helper method for operation initiation.
      * 
      * @param messageContext
@@ -497,7 +520,7 @@ public class VfsMediator extends AbstractMediator {
         op.setFtpPassiveMode(ftpPassiveMode);
         op.setRetryCount(this.retryCount);
         op.setRetryWait(this.retryWait);
-
+        op.setSftpTimeout(getSftpTimeoutValue());
         return op;
     }
 
