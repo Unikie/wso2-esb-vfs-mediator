@@ -531,8 +531,7 @@ public class VfsFileTransferUtility {
     }
 
 
-    private abstract class Retrier<T> {
-        protected final VfsFileTransferUtility utility = VfsFileTransferUtility.this;
+    abstract static class Retrier<T> {
 
         public T doWithRetry(int retryCount, int retryWait) throws FileSystemException {
             boolean retry = false;

@@ -18,6 +18,7 @@ package fi.mystes.synapse.mediator.vfs;
 import fi.mystes.synapse.mediator.vfs.VFSTestHelper.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.vfs2.FileSystemException;
+import org.apache.commons.vfs2.FileSystemManager;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -25,12 +26,17 @@ import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.List;
 
 import static fi.mystes.synapse.mediator.vfs.VFSTestHelper.*;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.startsWith;
 import static org.mockito.Mockito.*;
 
@@ -294,17 +300,77 @@ public class VfsFileTransferUtilityTest {
         assertEquals("Utility returned false file copied count", 10, copyCount);
     }
 
-    //@Test // FIXME: java.lang.NoClassDefFoundError: org/apache/commons/net/ftp/parser/FTPFileEntryParserFactory
-    public void testFtpPassiveFlag() throws Exception {
-        createTestFiles(SOURCE_DIR, 3);
+    @Test
+    public void testRetrierWhichFails() throws Exception {
+        Exception exceptionCaught = null;
+        VfsFileTransferUtility.Retrier<Object> retrier = new VfsFileTransferUtility.Retrier<Object>() {
+            @Override
+            public Object operation() throws FileSystemException {
+                throw new FileSystemException("errore!");
+            }
+        };
 
-        VfsOperationOptions opts = VfsOperationOptions.with().sourceDirectory(SOURCE_DIR).targetDirectory(TARGET_DIR).archiveDirectory(ARCHIVE_DIR).createMissingDirectories(true).ftpPassiveModeEnabled(true).build();
-        int copyCount = new VfsFileTransferUtility((opts)).copyFiles();
+        VfsFileTransferUtility.Retrier<Object> spyRetrier = spy(retrier);
+        long startTime = System.currentTimeMillis();
+        try {
+            spyRetrier.doWithRetry(3, 350);
+        } catch (FileSystemException e) {
+            System.out.println(System.currentTimeMillis() - startTime);
+            assertTrue("Failing was too quick!", System.currentTimeMillis() - startTime > 1050);
+            exceptionCaught = e;
+        }
 
-        assertFilesExists(SOURCE_DIR, 3);
-        assertFilesExists(TARGET_DIR, 3);
-        assertFilesExists(ARCHIVE_DIR, 3);
-        assertEquals("Utility returned wrong file copied count", 3, copyCount);
+        assertNotNull(exceptionCaught);
+    }
+
+    @Test
+    public void testRetrierSucceedsAfterFewTries() throws Exception {
+        final List<Integer> intList = new ArrayList<Integer>();
+        VfsFileTransferUtility.Retrier<Integer> retrier = new VfsFileTransferUtility.Retrier<Integer>() {
+            @Override
+            public Integer operation() throws FileSystemException {
+                intList.add(1);
+                if(intList.size() < 5) {
+                    throw new FileSystemException("Intlist not big enough yet!");
+                }
+                return 42;
+            }
+        };
+        VfsFileTransferUtility.Retrier<Integer> spyRetrier = spy(retrier);
+        long startTime = System.currentTimeMillis();
+        int response = spyRetrier.doWithRetry(6, 150);
+
+        assertEquals("response is not correct!", 42, response);
+        assertTrue("Response was too quick", System.currentTimeMillis() - startTime > 600);
+
+        verify(spyRetrier, times(5)).operation();
+    }
+
+    @Test(expected = FileSystemException.class)
+    public void testRetrierThrowsAfterMaxRetries() throws FileSystemException {
+        VfsFileTransferUtility.Retrier<Integer> retrier = new VfsFileTransferUtility.Retrier<Integer>() {
+            @Override
+            public Integer operation() throws FileSystemException {
+                throw new FileSystemException("Error");
+            }
+        };
+
+        retrier.doWithRetry(5, 5);
+    }
+
+    @Test
+    public void testRetrierWhichSuccessImmediately() throws Exception {
+        VfsFileTransferUtility.Retrier<Integer> retrier = new VfsFileTransferUtility.Retrier<Integer>() {
+            @Override
+            public Integer operation() throws FileSystemException {
+                return 42;
+            }
+        };
+        long startTime = System.currentTimeMillis();
+        int response = retrier.doWithRetry(100, 1000);
+
+        assertTrue("response was too slow", System.currentTimeMillis() - startTime < 30);
+        assertEquals("Response was incorrect", 42, response);
     }
 
     private String expectedFolderNotExistsErrorString(String folder) {
