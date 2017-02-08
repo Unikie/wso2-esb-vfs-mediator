@@ -18,6 +18,7 @@ package fi.mystes.synapse.mediator;
 import java.text.MessageFormat;
 import java.util.List;
 
+import fi.mystes.synapse.mediator.config.VfsMediatorConfigConstants;
 import org.apache.axiom.om.OMAttribute;
 import org.apache.axiom.om.OMElement;
 import org.apache.axiom.om.OMText;
@@ -50,8 +51,8 @@ public class VfsMediator extends AbstractMediator {
     private Boolean lockEnabledValue;
     private boolean streamingTransferValue;
     private String streamingBlockSizeValue;
-    private int retryCount;
-    private int retryWait;
+    private int retryCount = VfsMediatorConfigConstants.DEFAULT_RETRY_COUNT;
+    private int retryWait = VfsMediatorConfigConstants.DEFAULT_RETRY_WAIT;
 
     private SynapseXPath filePatternXpath;
     private SynapseXPath operationXpath;
