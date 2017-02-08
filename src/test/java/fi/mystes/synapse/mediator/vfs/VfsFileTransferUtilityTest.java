@@ -18,7 +18,6 @@ package fi.mystes.synapse.mediator.vfs;
 import fi.mystes.synapse.mediator.vfs.VFSTestHelper.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.vfs2.FileSystemException;
-import org.apache.commons.vfs2.FileSystemManager;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,10 +25,10 @@ import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -315,7 +314,6 @@ public class VfsFileTransferUtilityTest {
         try {
             spyRetrier.doWithRetry(3, 350);
         } catch (FileSystemException e) {
-            System.out.println(System.currentTimeMillis() - startTime);
             assertTrue("Failing was too quick!", System.currentTimeMillis() - startTime > 1050);
             exceptionCaught = e;
         }
@@ -371,6 +369,50 @@ public class VfsFileTransferUtilityTest {
 
         assertTrue("response was too slow", System.currentTimeMillis() - startTime < 30);
         assertEquals("Response was incorrect", 42, response);
+    }
+
+    @Test
+    public void targetFilenamePrefixAdded() throws Exception {
+        createTestFiles(SOURCE_DIR, 1);
+
+        int copyCount = new VfsFileTransferUtility((VfsOperationOptions.with().sourceDirectory(SOURCE_DIR).targetDirectory(TARGET_DIR).createMissingDirectories(true).targetFilePrefix("testprefix_")).build()).copyFiles();
+
+        assertFileExists(TARGET_DIR + "/" + "testprefix_test0.txt");
+        assertEquals("Utility returned wrong copied file count", 1, copyCount);
+    }
+
+    @Test
+    public void targetFilenameSuffixAdded() throws Exception {
+        createTestFiles(SOURCE_DIR, 1);
+
+        int copyCount = new VfsFileTransferUtility((VfsOperationOptions.with().sourceDirectory(SOURCE_DIR).targetDirectory(TARGET_DIR).createMissingDirectories(true).targetFileSuffix("_suffixtest")).build()).copyFiles();
+
+        assertFileExists(TARGET_DIR + "/" + "test0_suffixtest.txt");
+        assertEquals("Utility returned wrong copied file count", 1, copyCount);
+    }
+
+    @Test
+    public void archiveFilenamePrefixAdded() throws Exception {
+        createTestFiles(SOURCE_DIR, 2);
+
+        int copyCount = new VfsFileTransferUtility(VfsOperationOptions.with().sourceDirectory(SOURCE_DIR).targetDirectory(TARGET_DIR).archiveDirectory(ARCHIVE_DIR).createMissingDirectories(true).archiveFilePrefix("archived_").build()).moveFiles();
+
+        assertFileExists(ARCHIVE_DIR + "/" + "archived_test0.txt");
+        assertFileExists(ARCHIVE_DIR + "/" + "archived_test1.txt");
+
+        assertEquals("Utility returned wrong copied file count", 2, copyCount);
+    }
+
+    @Test
+    public void archiveFilenameSuffixAdded() throws Exception {
+        createTestFiles(SOURCE_DIR, 2);
+
+        int copyCount = new VfsFileTransferUtility(VfsOperationOptions.with().sourceDirectory(SOURCE_DIR).targetDirectory(TARGET_DIR).archiveDirectory(ARCHIVE_DIR).createMissingDirectories(true).archiveFileSuffix("_archivedxx").build()).moveFiles();
+
+        assertFileExists(ARCHIVE_DIR + "/" + "test0_archivedxx.txt");
+        assertFileExists(ARCHIVE_DIR + "/" + "test1_archivedxx.txt");
+
+        assertEquals("Utility returned wrong copied file count", 2, copyCount);
     }
 
     private String expectedFolderNotExistsErrorString(String folder) {

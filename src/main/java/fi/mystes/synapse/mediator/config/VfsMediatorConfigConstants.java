@@ -43,4 +43,11 @@ public class VfsMediatorConfigConstants {
     public static final int DEFAULT_SFTP_TIMEOUT = 30000;
 
     public static final QName ATT_SFTP_TIMEOUT = new QName(NAMESPACE_STRING, "sftpTimeout");
+
+    public static final QName ELEM_TARGET_FILENAME_PREFIX = new QName(NAMESPACE_STRING, "targetFilenamePrefix");
+    public static final QName ELEM_TARGET_FILENAME_SUFFIX = new QName(NAMESPACE_STRING, "targetFilenameSuffix");
+
+    public static final QName ELEM_ARCHIVE_FILENAME_PREFIX = new QName(NAMESPACE_STRING, "archiveFilenamePrefix");
+    public static final QName ELEM_ARCHIVE_FILENAME_SUFFIX = new QName(NAMESPACE_STRING, "archiveFilenameSuffix");
+
 }

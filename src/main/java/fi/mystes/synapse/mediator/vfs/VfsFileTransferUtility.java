@@ -22,6 +22,7 @@ import org.apache.commons.vfs2.impl.StandardFileSystemManager;
 import org.apache.commons.vfs2.provider.ftp.FtpFileSystemConfigBuilder;
 import org.apache.commons.vfs2.provider.sftp.SftpFileSystemConfigBuilder;
 import org.apache.synapse.SynapseException;
+import org.apache.commons.io.FilenameUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -145,10 +146,15 @@ public class VfsFileTransferUtility {
      * @throws FileSystemException
      *             If file copy operation fails
      */
-    private boolean copyFile(final FileSystemManager manager, final FileObject file, String targetDirectoryPath, boolean lockEnabled)
+    private boolean copyFile(final FileSystemManager manager, final FileObject file, String targetDirectoryPath, boolean lockEnabled, TargetType targetType)
             throws FileSystemException {
         if (file.getType() == FileType.FILE) {
-            final String targetPath = targetDirectoryPath + "/" + file.getName().getBaseName();
+            final String targetPath = targetDirectoryPath + "/" +
+                    getPrefix(targetType) +
+                    FilenameUtils.removeExtension(file.getName().getBaseName()) +
+                    getSuffix(targetType) +
+                    (FilenameUtils.getExtension(file.getName().getBaseName()).isEmpty() ? "" : ("." + FilenameUtils.getExtension(file.getName().getBaseName())));
+
             String lockFilePath = null;
             if (lockEnabled) {
                 lockFilePath = createLockFile(manager, targetPath);
@@ -225,7 +231,7 @@ public class VfsFileTransferUtility {
         FileSystemManager manager = null;
         try {
             manager = initManager();
-            assert manager != null;
+
             FileObject toDirectory = resolveFile(manager, options.getTargetDirectory());
             log.debug("Starting operation " + operation + ", target directory: " + fileObjectNameForDebug(toDirectory));
             validateFolder(toDirectory, options.isCreateMissingDirectories());
@@ -244,7 +250,7 @@ public class VfsFileTransferUtility {
                 // archive file here first before processing it
                 if (options.getArchiveDirectory() != null) {
                     log.debug("Copying file to archive directory");
-                    copyFile(manager, children[i], options.getArchiveDirectory(), options.isLockEnabled());
+                    copyFile(manager, children[i], options.getArchiveDirectory(), options.isLockEnabled(), TargetType.ARCHIVE);
                 }
                 if (operation == Operation.MOVE) {
                     if (moveFile(manager, children[i], options.getTargetDirectory(), options.isLockEnabled())) {
@@ -252,7 +258,7 @@ public class VfsFileTransferUtility {
                         fileProcessed++;
                     }
                 } else if (operation == Operation.COPY) {
-                    if (copyFile(manager, children[i], options.getTargetDirectory(), options.isLockEnabled())) {
+                    if (copyFile(manager, children[i], options.getTargetDirectory(), options.isLockEnabled(), TargetType.TARGET)) {
                         // FileObject was copied successfully
                         fileProcessed++;
                     }
@@ -285,7 +291,12 @@ public class VfsFileTransferUtility {
      */
     private boolean moveFile(final FileSystemManager manager, final FileObject file, String toDirectoryPath, boolean lockEnabled) throws FileSystemException {
         if (file.getType() == FileType.FILE) {
-            final String targetPath = toDirectoryPath + "/" + file.getName().getBaseName();
+            final String targetPath = toDirectoryPath + "/" +
+                    getPrefix(TargetType.TARGET) +
+                    FilenameUtils.removeExtension(file.getName().getBaseName()) +
+                    getSuffix(TargetType.TARGET) +
+                    (FilenameUtils.getExtension(file.getName().getBaseName()).isEmpty() ? "" : ("." + FilenameUtils.getExtension(file.getName().getBaseName())));
+
             String lockFilePath = null;
             if (lockEnabled) {
                 lockFilePath = createLockFile(manager, targetPath);
@@ -517,11 +528,53 @@ public class VfsFileTransferUtility {
     }
 
     /**
+     * Helper method to get the suffix for file operations.
+     * @param targetType target folder or archive folder
+     * @return resolved suffix
+     */
+    private String getSuffix(TargetType targetType) {
+        switch (targetType) {
+            case TARGET:
+                return options.getTargetFileSuffix() == null ? "" : options.getTargetFileSuffix();
+            case ARCHIVE:
+                return options.getArchiveFileSuffix() == null ? "" : options.getArchiveFileSuffix();
+            default:
+                return "";
+        }
+    }
+
+    /**
+     * Helper method to get the prefix for file operations.
+     * @param targetType target folder or archive folder
+     * @return resolved prefix
+     */
+    private String getPrefix(TargetType targetType) {
+        switch (targetType) {
+            case TARGET:
+                return options.getTargetFilePrefix() == null ? "" : options.getTargetFilePrefix();
+            case ARCHIVE:
+                return options.getArchiveFilePrefix() == null ? "" : options.getArchiveFilePrefix();
+            default:
+                return "";
+        }
+    }
+
+    /**
      * Supported VFS operation enumerator.
      */
     private enum Operation {
         MOVE, COPY
     }
+
+
+    /**
+     * Target folder type.
+     */
+    private enum TargetType {
+        TARGET, ARCHIVE
+    }
+
+
 
     private FileSystemManager initManager() throws FileSystemException {
         StandardFileSystemManager manager = new StandardFileSystemManager();
@@ -561,5 +614,4 @@ public class VfsFileTransferUtility {
         public abstract T operation() throws FileSystemException;
 
     }
-
 }

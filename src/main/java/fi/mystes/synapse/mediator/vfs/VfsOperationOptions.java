@@ -22,8 +22,12 @@ package fi.mystes.synapse.mediator.vfs;
 public final class VfsOperationOptions {
     private final String sourceDirectory;
     private final String targetDirectory;
+    private final String targetFileSuffix;
+    private final String targetFilePrefix;
     private final String filePatternRegex;
     private final String archiveDirectory;
+    private final String archiveFileSuffix;
+    private final String archiveFilePrefix;
     private final String streamingBlockSize;
     private final boolean createMissingDirectories;
     private final boolean lockEnabled;
@@ -56,10 +60,23 @@ public final class VfsOperationOptions {
      *            Boolean flag indicating whether file transfer use streaming
      * @param streamingBlockSize
      *            Block size used with streaming transfer
+     * @param archiveFilePrefix
+     *            Prefix to use when archiving files
+     * @param archiveFileSuffix
+     *            Suffix to use when archiving files
+     * @param targetFilePrefix
+     *            Prefix to use when doing file operations
+     * @param targetFileSuffix
+     *            Suffix to use when doing file operations
      */
-    public VfsOperationOptions(String sourceDirectory, String targetDirectory, String filePatternRegex,
-            String archiveDirectory, boolean createMissingDirectories, boolean lockEnabled, boolean ftpPassiveMode,
-            boolean streamingTransfer, String streamingBlockSize, int retryCount, int retryWait, int sftpTimeout) {
+    public VfsOperationOptions(String sourceDirectory, String targetDirectory,
+                               String filePatternRegex, String archiveDirectory,
+                               boolean createMissingDirectories, boolean lockEnabled,
+                               boolean ftpPassiveMode, boolean streamingTransfer,
+                               String streamingBlockSize, int retryCount,
+                               int retryWait, int sftpTimeout,
+                               String archiveFilePrefix, String archiveFileSuffix,
+                               String targetFilePrefix, String targetFileSuffix) {
         this.sourceDirectory = sourceDirectory;
         this.targetDirectory = targetDirectory;
         this.filePatternRegex = filePatternRegex;
@@ -72,6 +89,10 @@ public final class VfsOperationOptions {
         this.retryCount = retryCount;
         this.retryWait = retryWait;
         this.sftpTimeout = sftpTimeout;
+        this.archiveFilePrefix = archiveFilePrefix;
+        this.archiveFileSuffix = archiveFileSuffix;
+        this.targetFilePrefix = targetFilePrefix;
+        this.targetFileSuffix = targetFileSuffix;
     }
 
     /**
@@ -92,6 +113,14 @@ public final class VfsOperationOptions {
         return targetDirectory;
     }
 
+    public String getTargetFileSuffix() {
+        return this.targetFileSuffix;
+    }
+
+    public String getTargetFilePrefix() {
+        return this.targetFilePrefix;
+    }
+
     /**
      * Returns file pattern regular expression for selecting files from source
      * directory.
@@ -109,6 +138,14 @@ public final class VfsOperationOptions {
      */
     public String getArchiveDirectory() {
         return archiveDirectory;
+    }
+
+    public String getArchiveFileSuffix() {
+        return this.archiveFileSuffix;
+    }
+
+    public String getArchiveFilePrefix() {
+        return this.archiveFilePrefix;
     }
 
     /**
@@ -227,6 +264,14 @@ public final class VfsOperationOptions {
             return false;
         if (streamingBlockSize != null ? !streamingBlockSize.equals(that.streamingBlockSize) : that.streamingBlockSize != null)
             return false;
+        if(targetFilePrefix != null ? !targetFilePrefix.equals(that.targetFilePrefix) : that.targetFilePrefix != null)
+            return false;
+        if(targetFileSuffix != null ? !targetFileSuffix.equals(that.targetFileSuffix) : that.targetFileSuffix != null)
+            return false;
+        if(archiveFilePrefix != null ? !archiveFilePrefix.equals(that.archiveFilePrefix) : that.archiveFilePrefix != null)
+            return false;
+        if(archiveFileSuffix != null ? !archiveFileSuffix.equals(that.archiveFileSuffix) : that.archiveFileSuffix != null)
+            return false;
         return !(archiveDirectory != null ? !archiveDirectory.equals(that.archiveDirectory)
                 : that.archiveDirectory != null);
 
@@ -282,6 +327,20 @@ public final class VfsOperationOptions {
         Builder targetDirectory(String targetDirectory);
 
         /**
+         * Setter for prefix for filename after file operation.
+         * @param prefix
+         * @return
+         */
+        Builder targetFilePrefix(String prefix);
+
+        /**
+         * Setter for suffix for filename after file operation.
+         * @param suffix
+         * @return
+         */
+        Builder targetFileSuffix(String suffix);
+
+        /**
          * Setter for file patter regular expression for file selecting.
          * 
          * @param filePatternRegex
@@ -298,6 +357,20 @@ public final class VfsOperationOptions {
          * @return This builder instance
          */
         Builder archiveDirectory(String archiveDirectory);
+
+        /**
+         * Setter for file prefix for archived files.
+         * @param prefix
+         * @return
+         */
+        Builder archiveFilePrefix(String prefix);
+
+        /**
+         * Setter for file suffix for archived files.
+         * @param suffix
+         * @return
+         */
+        Builder archiveFileSuffix(String suffix);
 
         /**
          * Setter for boolean flag whether to create missing directories.
@@ -388,12 +461,17 @@ public final class VfsOperationOptions {
         private int retryCount;
         private int retryWait;
         private int sftpTimeout;
+        private String archiveFileSuffix;
+        private String archiveFilePrefix;
+        private String targetFileSuffix;
+        private String targetFilePrefix;
 
         @Override
         public VfsOperationOptions build() {
             return new VfsOperationOptions(sourceDirectory, targetDirectory, filePatternRegex, archiveDirectory,
                     createMissingDirectories, lockEnabled, ftpPassiveMode, streamingTransfer, streamingBlockSize,
-                    retryCount, retryWait, sftpTimeout);
+                    retryCount, retryWait, sftpTimeout, archiveFilePrefix, archiveFileSuffix, targetFilePrefix,
+                    targetFileSuffix);
         }
 
         @Override
@@ -411,6 +489,20 @@ public final class VfsOperationOptions {
         }
 
         @Override
+        public Builder targetFilePrefix(String prefix) {
+            this.targetFilePrefix = prefix;
+
+            return this;
+        }
+
+        @Override
+        public Builder targetFileSuffix(String suffix) {
+            this.targetFileSuffix = suffix;
+
+            return this;
+        }
+
+        @Override
         public Builder filePatternRegex(String filePatternRegex) {
             this.filePatternRegex = filePatternRegex;
 
@@ -420,6 +512,20 @@ public final class VfsOperationOptions {
         @Override
         public Builder archiveDirectory(String archiveDirectory) {
             this.archiveDirectory = archiveDirectory;
+
+            return this;
+        }
+
+        @Override
+        public Builder archiveFilePrefix(String prefix) {
+            this.archiveFilePrefix = prefix;
+
+            return this;
+        }
+
+        @Override
+        public Builder archiveFileSuffix(String suffix) {
+            this.archiveFileSuffix = suffix;
 
             return this;
         }

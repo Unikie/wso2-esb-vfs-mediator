@@ -37,6 +37,11 @@ public abstract class AbstractVfsOperation implements VfsOperation {
     private int retryWait;
     private int sftpTimeout;
 
+    private String targetFilePrefix;
+    private String targetFileSuffix;
+    private String archiveFilePrefix;
+    private String archiveFileSuffix;
+
     /**
      * Setter for operation delegate instance.
      */
@@ -62,6 +67,21 @@ public abstract class AbstractVfsOperation implements VfsOperation {
     }
 
     /**
+     * Setter for target file prefix.
+     * @param prefix
+     */
+    public void setTargetFilePrefix(String prefix) {
+        this.targetFilePrefix = prefix;
+    }
+
+    /**
+     * Setter for target file suffix.
+     * @param suffix
+     */
+    public void setTargetFileSuffix(String suffix) {
+        this.targetFileSuffix = suffix;
+    }
+    /**
      * Setter for file archiving directory path.
      */
     @Override
@@ -69,6 +89,21 @@ public abstract class AbstractVfsOperation implements VfsOperation {
         this.archiveDirectory = archiveDirectory;
     }
 
+    /**
+     * Setter for archive file prefix.
+     * @param prefix
+     */
+    public void setArchiveFilePrefix(String prefix) {
+        this.archiveFilePrefix = prefix;
+    }
+
+    /**
+     * Setter for archive file suffix.
+     * @param suffix
+     */
+    public void setArchiveFileSuffix(String suffix) {
+        this.archiveFileSuffix = suffix;
+    }
     /**
      * Setter for create missing directories boolean flag.
      */
@@ -181,6 +216,9 @@ public abstract class AbstractVfsOperation implements VfsOperation {
                 .filePatternRegex(filePattern).archiveDirectory(archiveDirectory)
                 .createMissingDirectories(createMissingDirectories).lockEnabled(lockEnabled)
                 .ftpPassiveModeEnabled(ftpPassiveMode).streamingTransferEnabled(streamingTransfer)
-                .streamingBlockSize(streamingBlockSize).retryCount(retryCount).retryWait(retryWait).sftpTimeout(sftpTimeout).build();
+                .streamingBlockSize(streamingBlockSize).retryCount(retryCount).retryWait(retryWait).sftpTimeout(sftpTimeout)
+                .targetFilePrefix(targetFilePrefix).targetFileSuffix(targetFileSuffix)
+                .archiveFilePrefix(archiveFilePrefix).archiveFileSuffix(archiveFileSuffix)
+                .build();
     }
 }
