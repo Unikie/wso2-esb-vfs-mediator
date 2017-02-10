@@ -255,6 +255,28 @@ public class VfsMediatorFactoryTest {
         }
     }
 
+    @Test
+    public void testCreateMediatorWithTargetPrefixExpression() throws Exception {
+        OMElement proxy = getDocumentElementFromResourcePath("/vfsMediatorTargetPrefixExpression.xml");
+        List<OMElement> vfsMediatorConfigs = (List<OMElement>) vfsMediator.evaluate(proxy);
+
+        VfsMediator mediator = (VfsMediator) factory.createMediator(vfsMediatorConfigs.get(0), null);
+
+        assertNotNull(mediator.getTargetFilenamePrefixXpath());
+        assertEquals("//elem/text()", mediator.getTargetFilenamePrefixXpath().toString());
+    }
+
+    @Test
+    public void testCreateMediatorWithTargetSuffixValue() throws Exception {
+        OMElement proxy = getDocumentElementFromResourcePath("/vfsMediatorTargetSuffixValue.xml");
+        List<OMElement> configs = (List<OMElement>) vfsMediator.evaluate(proxy);
+
+        VfsMediator mediator = (VfsMediator) factory.createMediator(configs.get(0), null);
+
+        assertNotNull(mediator);
+        assertEquals("static_value", mediator.getTargetFilenameSuffixValue());
+    }
+
     private static OMElement getDocumentElementFromResourcePath(String path)
             throws FileNotFoundException, XMLStreamException {
         return new StAXOMBuilder(
