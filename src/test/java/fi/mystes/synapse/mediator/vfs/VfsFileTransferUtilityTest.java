@@ -29,20 +29,15 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import static fi.mystes.synapse.mediator.vfs.VFSTestHelper.*;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.startsWith;
 import static org.mockito.Mockito.*;
 
 public class VfsFileTransferUtilityTest {
-    private static final String SOURCE_DIR = "file:///tmp/foo/bar/dir";
-    private static final String TARGET_DIR = "file:///tmp/bar/foo/dir";
-    private static final String ARCHIVE_DIR = "file:///tmp/bar/foo/archive";
+    private static final String SOURCE_DIR = "tmp:///foo/bar/dir";
+    private static final String TARGET_DIR = "tmp:///bar/foo/dir";
+    private static final String ARCHIVE_DIR = "tmp:///bar/foo/archive";
 
     @After
     public void tearDown() throws FileSystemException {
@@ -297,122 +292,6 @@ public class VfsFileTransferUtilityTest {
         assertFilesExists(dynamicTarget, 10);
         assertFilesExists(ARCHIVE_DIR, 10);
         assertEquals("Utility returned false file copied count", 10, copyCount);
-    }
-
-    @Test
-    public void testRetrierWhichFails() throws Exception {
-        Exception exceptionCaught = null;
-        VfsFileTransferUtility.Retrier<Object> retrier = new VfsFileTransferUtility.Retrier<Object>() {
-            @Override
-            public Object operation() throws FileSystemException {
-                throw new FileSystemException("errore!");
-            }
-        };
-
-        VfsFileTransferUtility.Retrier<Object> spyRetrier = spy(retrier);
-        long startTime = System.currentTimeMillis();
-        try {
-            spyRetrier.doWithRetry(3, 350);
-        } catch (FileSystemException e) {
-            assertTrue("Failing was too quick!", System.currentTimeMillis() - startTime > 1050);
-            exceptionCaught = e;
-        }
-
-        assertNotNull(exceptionCaught);
-    }
-
-    @Test
-    public void testRetrierSucceedsAfterFewTries() throws Exception {
-        final List<Integer> intList = new ArrayList<Integer>();
-        VfsFileTransferUtility.Retrier<Integer> retrier = new VfsFileTransferUtility.Retrier<Integer>() {
-            @Override
-            public Integer operation() throws FileSystemException {
-                intList.add(1);
-                if(intList.size() < 5) {
-                    throw new FileSystemException("Intlist not big enough yet!");
-                }
-                return 42;
-            }
-        };
-        VfsFileTransferUtility.Retrier<Integer> spyRetrier = spy(retrier);
-        long startTime = System.currentTimeMillis();
-        int response = spyRetrier.doWithRetry(6, 150);
-
-        assertEquals("response is not correct!", 42, response);
-        assertTrue("Response was too quick", System.currentTimeMillis() - startTime > 600);
-
-        verify(spyRetrier, times(5)).operation();
-    }
-
-    @Test(expected = FileSystemException.class)
-    public void testRetrierThrowsAfterMaxRetries() throws FileSystemException {
-        VfsFileTransferUtility.Retrier<Integer> retrier = new VfsFileTransferUtility.Retrier<Integer>() {
-            @Override
-            public Integer operation() throws FileSystemException {
-                throw new FileSystemException("Error");
-            }
-        };
-
-        retrier.doWithRetry(5, 5);
-    }
-
-    @Test
-    public void testRetrierWhichSuccessImmediately() throws Exception {
-        VfsFileTransferUtility.Retrier<Integer> retrier = new VfsFileTransferUtility.Retrier<Integer>() {
-            @Override
-            public Integer operation() throws FileSystemException {
-                return 42;
-            }
-        };
-        long startTime = System.currentTimeMillis();
-        int response = retrier.doWithRetry(100, 1000);
-
-        assertTrue("response was too slow", System.currentTimeMillis() - startTime < 30);
-        assertEquals("Response was incorrect", 42, response);
-    }
-
-    @Test
-    public void targetFilenamePrefixAdded() throws Exception {
-        createTestFiles(SOURCE_DIR, 1);
-
-        int copyCount = new VfsFileTransferUtility((VfsOperationOptions.with().sourceDirectory(SOURCE_DIR).targetDirectory(TARGET_DIR).createMissingDirectories(true).targetFilePrefix("testprefix_")).build()).copyFiles();
-
-        assertFileExists(TARGET_DIR + "/" + "testprefix_test0.txt");
-        assertEquals("Utility returned wrong copied file count", 1, copyCount);
-    }
-
-    @Test
-    public void targetFilenameSuffixAdded() throws Exception {
-        createTestFiles(SOURCE_DIR, 1);
-
-        int copyCount = new VfsFileTransferUtility((VfsOperationOptions.with().sourceDirectory(SOURCE_DIR).targetDirectory(TARGET_DIR).createMissingDirectories(true).targetFileSuffix("_suffixtest")).build()).copyFiles();
-
-        assertFileExists(TARGET_DIR + "/" + "test0_suffixtest.txt");
-        assertEquals("Utility returned wrong copied file count", 1, copyCount);
-    }
-
-    @Test
-    public void archiveFilenamePrefixAdded() throws Exception {
-        createTestFiles(SOURCE_DIR, 2);
-
-        int copyCount = new VfsFileTransferUtility(VfsOperationOptions.with().sourceDirectory(SOURCE_DIR).targetDirectory(TARGET_DIR).archiveDirectory(ARCHIVE_DIR).createMissingDirectories(true).archiveFilePrefix("archived_").build()).moveFiles();
-
-        assertFileExists(ARCHIVE_DIR + "/" + "archived_test0.txt");
-        assertFileExists(ARCHIVE_DIR + "/" + "archived_test1.txt");
-
-        assertEquals("Utility returned wrong copied file count", 2, copyCount);
-    }
-
-    @Test
-    public void archiveFilenameSuffixAdded() throws Exception {
-        createTestFiles(SOURCE_DIR, 2);
-
-        int copyCount = new VfsFileTransferUtility(VfsOperationOptions.with().sourceDirectory(SOURCE_DIR).targetDirectory(TARGET_DIR).archiveDirectory(ARCHIVE_DIR).createMissingDirectories(true).archiveFileSuffix("_archivedxx").build()).moveFiles();
-
-        assertFileExists(ARCHIVE_DIR + "/" + "test0_archivedxx.txt");
-        assertFileExists(ARCHIVE_DIR + "/" + "test1_archivedxx.txt");
-
-        assertEquals("Utility returned wrong copied file count", 2, copyCount);
     }
 
     private String expectedFolderNotExistsErrorString(String folder) {

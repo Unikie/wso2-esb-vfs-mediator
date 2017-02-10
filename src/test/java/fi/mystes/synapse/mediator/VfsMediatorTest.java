@@ -30,7 +30,6 @@ import org.apache.synapse.util.xpath.SynapseXPath;
 import org.jaxen.JaxenException;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -48,7 +47,6 @@ public class VfsMediatorTest {
     private static final boolean DEFAULT_CREATE_MISSING_DIRECTORIES = false;
     private static final boolean DEFAULT_LOCK_ENABLED = true;
     private static final boolean DEFAULT_FTP_PASSIVE_MODE_ENABLED = false;
-    private static final String DEFAULT_PREFIX_SUFFIX = "";
 
     @Mock
     private SynapseXPath filePatternXpath;
@@ -70,12 +68,6 @@ public class VfsMediatorTest {
 
     @Mock
     private SynapseXPath lockEnabledXpath;
-
-    @Mock
-    private SynapseXPath targetFilenamePrefixXpath;
-
-    @Mock
-    private SynapseXPath archiveFilenameSuffixXpath;
 
     @Mock
     private MessageContext mc;
@@ -303,29 +295,6 @@ public class VfsMediatorTest {
         verify(operationDelegate).move(eq(defaultOptions().ftpPassiveModeEnabled(true).build()));
     }
 
-    @Test
-    public void mediationDelegatesWithCorrectTargetPrefix() throws Exception {
-        mediator.setTargetFilenamePrefixXpath(targetFilenamePrefixXpath);
-        when(targetFilenamePrefixXpath.evaluate(anyObject())).thenReturn("pref");
-        assertTrue(mediator.mediate(mc));
-        verify(operationDelegate).move(eq(defaultOptions().targetFilePrefix("pref").build()));
-    }
-
-    @Test
-    public void mediationDelegatesWithCorrectArchiveSuffix() throws Exception {
-        mediator.setArchiveFilenameSuffixXpath(archiveFilenameSuffixXpath);
-        when(archiveFilenameSuffixXpath.evaluate(Matchers.anyObject())).thenReturn("__suffix");
-        assertTrue(mediator.mediate(mc));
-        verify(operationDelegate).move(eq(defaultOptions().archiveFileSuffix("__suffix").build()));
-    }
-
-    @Test
-    public void mediationDelegatesWithCorrectTargetSuffix() throws Exception {
-        mediator.setTargetFilenameSuffixValue("suffix_value");
-        assertTrue(mediator.mediate(mc));
-        verify(operationDelegate).move(eq(defaultOptions().targetFileSuffix("suffix_value").build()));
-    }
-
     private void resetXpaths() {
         mediator.setArchiveDirectoryXpath(null);
         mediator.setSourceDirectoryXpath(null);
@@ -337,18 +306,7 @@ public class VfsMediatorTest {
     }
 
     private VfsOperationOptions.Builder defaultOptions() {
-        return VfsOperationOptions.with()
-                .sourceDirectory(SOURCE_DIRECTORY)
-                .targetDirectory(TARGET_DIRECTORY)
-                .filePatternRegex(FILE_PATTERN)
-                .archiveDirectory(ARCHIVE_DIRECTORY)
-                .createMissingDirectories(DEFAULT_CREATE_MISSING_DIRECTORIES)
-                .lockEnabled(DEFAULT_LOCK_ENABLED)
-                .ftpPassiveModeEnabled(DEFAULT_FTP_PASSIVE_MODE_ENABLED)
-                .targetFilePrefix(DEFAULT_PREFIX_SUFFIX)
-                .targetFileSuffix(DEFAULT_PREFIX_SUFFIX)
-                .archiveFileSuffix(DEFAULT_PREFIX_SUFFIX)
-                .archiveFilePrefix(DEFAULT_PREFIX_SUFFIX);
+        return VfsOperationOptions.with().sourceDirectory(SOURCE_DIRECTORY).targetDirectory(TARGET_DIRECTORY).filePatternRegex(FILE_PATTERN).archiveDirectory(ARCHIVE_DIRECTORY).createMissingDirectories(DEFAULT_CREATE_MISSING_DIRECTORIES).lockEnabled(DEFAULT_LOCK_ENABLED).ftpPassiveModeEnabled(DEFAULT_FTP_PASSIVE_MODE_ENABLED);
     }
 
 }

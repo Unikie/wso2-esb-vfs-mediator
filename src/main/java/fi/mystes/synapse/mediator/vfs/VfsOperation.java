@@ -58,36 +58,12 @@ public interface VfsOperation {
     void setTargetDirectory(String targetDirectory);
 
     /**
-     * Sets the target file prefix.
-     * @param prefix
-     */
-    void setTargetFilePrefix(String prefix);
-
-    /**
-     * Sets the target file suffix.
-     * @param suffix
-     */
-    void setTargetFileSuffix(String suffix);
-
-    /**
      * Sets archive directory where files will be archived.
      * 
      * @param targetDirectory
      *            Path to archive directory
      */
     void setArchiveDirectory(String targetDirectory);
-
-    /**
-     * Sets the archive file prefix.
-     * @param prefix
-     */
-    void setArchiveFilePrefix(String prefix);
-
-    /**
-     * Sets the archive file suffix.
-     * @param suffix
-     */
-    void setArchiveFileSuffix(String suffix);
 
     /**
      * Sets file pattern for selecting files by operation.
@@ -137,19 +113,4 @@ public interface VfsOperation {
      */
     void setFtpPassiveMode(boolean ftpPassiveMode);
 
-    /**
-     * Sets the retry count.
-     *
-     * @param retryCount
-     */
-    void setRetryCount(int retryCount);
-
-    /**
-     * Sets the retry wait time in milliseconds.
-     *
-     * @param retryWait
-     */
-    void setRetryWait(int retryWait);
-
-    void setSftpTimeout(int sftpTimeout);
 }

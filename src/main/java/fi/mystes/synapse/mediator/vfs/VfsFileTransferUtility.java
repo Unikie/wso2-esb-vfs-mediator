@@ -18,11 +18,8 @@ package fi.mystes.synapse.mediator.vfs;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.vfs2.*;
-import org.apache.commons.vfs2.impl.StandardFileSystemManager;
 import org.apache.commons.vfs2.provider.ftp.FtpFileSystemConfigBuilder;
-import org.apache.commons.vfs2.provider.sftp.SftpFileSystemConfigBuilder;
 import org.apache.synapse.SynapseException;
-import org.apache.commons.io.FilenameUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -57,8 +54,6 @@ public class VfsFileTransferUtility {
         if (options.isFtpPassiveModeEnabled()) {
             FtpFileSystemConfigBuilder.getInstance().setPassiveMode(fsOptions, true);
         }
-
-        SftpFileSystemConfigBuilder.getInstance().setTimeout(fsOptions, options.getSftpTimeout());
     }
 
     /**
@@ -94,41 +89,25 @@ public class VfsFileTransferUtility {
      * @throws FileSystemException
      *             If file listing fails
      */
-    private FileObject[] listFiles(FileSystemManager manager, String sourceDirectoryPath, final String filePatternRegex) throws FileSystemException {
-        final FileObject fromDirectory = resolveFile(manager, sourceDirectoryPath);
-        FileObject[] fileList = null;
+    private FileObject[] listFiles(String sourceDirectoryPath, String filePatternRegex) throws FileSystemException {
+        FileObject fromDirectory = resolveFile(sourceDirectoryPath);
+        log.debug("Source directory: " + fileObjectNameForDebug(fromDirectory));
+        // check that both of the parameters are folders
+        isFolder(fromDirectory);
 
-        try {
-            log.debug("Source directory: " + fileObjectNameForDebug(fromDirectory));
-            // check that both of the parameters are folders
-            isFolder(fromDirectory);
-
-            Retrier<FileObject[]> retrier = new Retrier<FileObject[]>() {
-                @Override
-                public FileObject[] operation() throws FileSystemException {
-                    FileObject[] fileListRet = null;
-                    if (filePatternRegex != null) {
-                        log.debug("Applying file pattern " + filePatternRegex);
-                        FileFilter ff = initFileFilter(filePatternRegex);
-                        fileListRet = fromDirectory.findFiles(new FileFilterSelector(ff));
-                    } else {
-                        // List all the files in that directory and copy each
-                        fileListRet = fromDirectory.getChildren();
-                    }
-                    log.debug("Found " + fileListRet.length + " files in source directory");
-
-                    return fileListRet;
-                }
-            };
-
-            fileList = retrier.doWithRetry(options.getRetryCount(), options.getRetryWait());
-
-        } finally {
-            try {
-                fromDirectory.close();
-            } catch (Exception ignored) {}
+        FileObject[] fileList;
+        // if file pattern exists, get files from folder according to that
+        if (filePatternRegex != null) {
+            log.debug("Applying file pattern " + filePatternRegex);
+            FileFilter ff = initFileFilter(filePatternRegex);
+            fileList = fromDirectory.findFiles(new FileFilterSelector(ff));
+        } else {
+            // List all the files in that directory and copy each
+            fileList = fromDirectory.getChildren();
         }
 
+        fromDirectory.close();
+        log.debug("Found " + fileList.length + " files in source directory");
         return fileList;
     }
 
@@ -146,44 +125,24 @@ public class VfsFileTransferUtility {
      * @throws FileSystemException
      *             If file copy operation fails
      */
-    private boolean copyFile(final FileSystemManager manager, final FileObject file, String targetDirectoryPath, boolean lockEnabled, TargetType targetType)
+    private boolean copyFile(FileObject file, String targetDirectoryPath, boolean lockEnabled)
             throws FileSystemException {
         if (file.getType() == FileType.FILE) {
-            final String targetPath = targetDirectoryPath + "/" +
-                    getPrefix(targetType) +
-                    FilenameUtils.removeExtension(file.getName().getBaseName()) +
-                    getSuffix(targetType) +
-                    (FilenameUtils.getExtension(file.getName().getBaseName()).isEmpty() ? "" : ("." + FilenameUtils.getExtension(file.getName().getBaseName())));
-
+            String targetPath = targetDirectoryPath + "/" + file.getName().getBaseName();
             String lockFilePath = null;
             if (lockEnabled) {
-                lockFilePath = createLockFile(manager, targetPath);
+                lockFilePath = createLockFile(targetPath);
             }
-
-
-            final FileObject newLocation = new Retrier<FileObject>() {
-                @Override
-                public FileObject operation() throws FileSystemException {
-                    return resolveFile(manager, targetPath);
-                }
-            }.doWithRetry(options.getRetryCount(), options.getRetryWait());
-
+            FileObject newLocation = resolveFile(targetPath);
             try {
                 log.debug(
                         "About to copy " + fileObjectNameForDebug(file) + " to " + fileObjectNameForDebug(newLocation));
 
                 if(options.isStreamingTransferEnabled()) {
-                    // TODO: Should we use the retrier for this?
-                    streamFromFileToFile(file, resolveFile(manager, targetPath));
+                    streamFromFileToFile(file, resolveFile(targetPath));
                 }
                 else{
-                    new Retrier<Object>() {
-                        @Override
-                        public Object operation() throws FileSystemException {
-                            newLocation.copyFrom(file, Selectors.SELECT_SELF);
-                            return null;
-                        }
-                    }.doWithRetry(options.getRetryCount(), options.getRetryWait());
+                    newLocation.copyFrom(file, Selectors.SELECT_SELF);
                 }
 
                 newLocation.close();
@@ -191,7 +150,7 @@ public class VfsFileTransferUtility {
                 log.debug("File copied to " + fileObjectNameForDebug(newLocation));
             } finally {
                 if (lockFilePath != null) {
-                    deleteLockFile(manager, lockFilePath);
+                    deleteLockFile(lockFilePath);
                 }
             }
             return true;
@@ -228,53 +187,41 @@ public class VfsFileTransferUtility {
      *             If given file operation fails
      */
     private int doOperation(Operation operation) throws FileSystemException {
-        FileSystemManager manager = null;
-        try {
-            manager = initManager();
+        FileObject toDirectory = resolveFile(options.getTargetDirectory());
+        log.debug("Starting operation " + operation + ", target directory: " + fileObjectNameForDebug(toDirectory));
+        validateFolder(toDirectory, options.isCreateMissingDirectories());
 
-            FileObject toDirectory = resolveFile(manager, options.getTargetDirectory());
-            log.debug("Starting operation " + operation + ", target directory: " + fileObjectNameForDebug(toDirectory));
-            validateFolder(toDirectory, options.isCreateMissingDirectories());
-
-            if (options.getArchiveDirectory() != null) {
-                FileObject archiveDir = resolveFile(manager, options.getArchiveDirectory());
-                log.debug("Using archive directory: " + fileObjectNameForDebug(archiveDir));
-                validateFolder(archiveDir, options.isCreateMissingDirectories());
-                archiveDir.close();
-            }
-
-            FileObject[] children = listFiles(manager, options.getSourceDirectory(), options.getFilePatternRegex());
-            int fileProcessed = 0;
-            for (int i = 0; i < children.length; i++) {
-                log.debug("Processing file #" + (i + 1));
-                // archive file here first before processing it
-                if (options.getArchiveDirectory() != null) {
-                    log.debug("Copying file to archive directory");
-                    copyFile(manager, children[i], options.getArchiveDirectory(), options.isLockEnabled(), TargetType.ARCHIVE);
-                }
-                if (operation == Operation.MOVE) {
-                    if (moveFile(manager, children[i], options.getTargetDirectory(), options.isLockEnabled())) {
-                        // FileObject was copied successfully
-                        fileProcessed++;
-                    }
-                } else if (operation == Operation.COPY) {
-                    if (copyFile(manager, children[i], options.getTargetDirectory(), options.isLockEnabled(), TargetType.TARGET)) {
-                        // FileObject was copied successfully
-                        fileProcessed++;
-                    }
-                } else {
-                    // unsupported operation
-                }
-
-            }
-            toDirectory.close();
-
-            return fileProcessed;
-        } finally {
-            if(manager != null) {
-                ((StandardFileSystemManager) manager).close();
-            }
+        if (options.getArchiveDirectory() != null) {
+            FileObject archiveDir = resolveFile(options.getArchiveDirectory());
+            log.debug("Using archive directory: " + fileObjectNameForDebug(archiveDir));
+            validateFolder(archiveDir, options.isCreateMissingDirectories());
         }
+
+        FileObject[] children = listFiles(options.getSourceDirectory(), options.getFilePatternRegex());
+        int fileProcessed = 0;
+        for (int i = 0; i < children.length; i++) {
+            log.debug("Processing file #" + (i + 1));
+            // archive file here first before processing it
+            if (options.getArchiveDirectory() != null) {
+                log.debug("Copying file to archive directory");
+                copyFile(children[i], options.getArchiveDirectory(), options.isLockEnabled());
+            }
+            if (operation == Operation.MOVE) {
+                if (moveFile(children[i], options.getTargetDirectory(), options.isLockEnabled())) {
+                    // FileObject was copied successfully
+                    fileProcessed++;
+                }
+            } else if (operation == Operation.COPY) {
+                if (copyFile(children[i], options.getTargetDirectory(), options.isLockEnabled())) {
+                    // FileObject was copied successfully
+                    fileProcessed++;
+                }
+            } else {
+                // unsupported operation
+            }
+
+        }
+        return fileProcessed;
     }
 
     /**
@@ -289,41 +236,23 @@ public class VfsFileTransferUtility {
      * @throws FileSystemException
      *             If file move operation fails
      */
-    private boolean moveFile(final FileSystemManager manager, final FileObject file, String toDirectoryPath, boolean lockEnabled) throws FileSystemException {
+    private boolean moveFile(FileObject file, String toDirectoryPath, boolean lockEnabled) throws FileSystemException {
         if (file.getType() == FileType.FILE) {
-            final String targetPath = toDirectoryPath + "/" +
-                    getPrefix(TargetType.TARGET) +
-                    FilenameUtils.removeExtension(file.getName().getBaseName()) +
-                    getSuffix(TargetType.TARGET) +
-                    (FilenameUtils.getExtension(file.getName().getBaseName()).isEmpty() ? "" : ("." + FilenameUtils.getExtension(file.getName().getBaseName())));
-
+            String targetPath = toDirectoryPath + "/" + file.getName().getBaseName();
             String lockFilePath = null;
             if (lockEnabled) {
-                lockFilePath = createLockFile(manager, targetPath);
+                lockFilePath = createLockFile(targetPath);
             }
-
-            final FileObject newLocation = new Retrier<FileObject>() {
-                @Override
-                public FileObject operation() throws FileSystemException {
-                    return resolveFile(manager, targetPath);
-                }
-            }.doWithRetry(options.getRetryCount(), options.getRetryWait());
-
+            FileObject newLocation = resolveFile(targetPath);
             try {
                 log.debug(
                         "About to move " + fileObjectNameForDebug(file) + " to " + fileObjectNameForDebug(newLocation));
 
                 if(options.isStreamingTransferEnabled()) {
-                    streamFromFileToFile(file, resolveFile(manager, targetPath)); // TODO TODO could fail. What if we fail during streaming and continue? Do we get targetFile which has the first streamed fragment and then the whole file again?
+                    streamFromFileToFile(file, resolveFile(targetPath));
                 }
                 else{
-                    new Retrier<Object>() {
-                        @Override
-                        public Object operation() throws FileSystemException {
-                            newLocation.copyFrom(file, Selectors.SELECT_SELF); // could fail
-                            return null;
-                        }
-                    }.doWithRetry(options.getRetryCount(), options.getRetryWait());
+                    newLocation.copyFrom(file, Selectors.SELECT_SELF);
                 }
 
                 newLocation.close();
@@ -332,7 +261,7 @@ public class VfsFileTransferUtility {
                 log.debug("File moved to " + fileObjectNameForDebug(newLocation));
             } finally {
                 if (lockFilePath != null) {
-                    deleteLockFile(manager, lockFilePath);
+                    deleteLockFile(lockFilePath);
                 }
             }
             return true;
@@ -351,8 +280,8 @@ public class VfsFileTransferUtility {
      * @throws FileSystemException
      *             If lock file creation fails
      */
-    private String createLockFile(FileSystemManager manager, String targetPath) throws FileSystemException {
-        FileObject lockFile = resolveFile(manager, lockFilePath(targetPath));
+    private String createLockFile(String targetPath) throws FileSystemException {
+        FileObject lockFile = resolveFile(lockFilePath(targetPath));
         log.debug("About to create lock file: " + fileObjectNameForDebug(lockFile));
         if (lockFile.exists()) {
             throw new FileSystemException(
@@ -440,8 +369,8 @@ public class VfsFileTransferUtility {
      * @throws FileSystemException
      *             If lock file deletion fails
      */
-    private void deleteLockFile(FileSystemManager manager, String lockFilePath) throws FileSystemException {
-        FileObject lockFile = resolveFile(manager, lockFilePath);
+    private void deleteLockFile(String lockFilePath) throws FileSystemException {
+        FileObject lockFile = resolveFile(lockFilePath);
         log.debug("Deleting lock file: " + fileObjectNameForDebug(lockFile));
         lockFile.delete();
         lockFile.close();
@@ -523,40 +452,8 @@ public class VfsFileTransferUtility {
      * @throws FileSystemException
      *             If resolving file fails
      */
-    private FileObject resolveFile(FileSystemManager manager, String path) throws FileSystemException {
-        return manager.resolveFile(path, fsOptions);
-    }
-
-    /**
-     * Helper method to get the suffix for file operations.
-     * @param targetType target folder or archive folder
-     * @return resolved suffix
-     */
-    private String getSuffix(TargetType targetType) {
-        switch (targetType) {
-            case TARGET:
-                return options.getTargetFileSuffix() == null ? "" : options.getTargetFileSuffix();
-            case ARCHIVE:
-                return options.getArchiveFileSuffix() == null ? "" : options.getArchiveFileSuffix();
-            default:
-                return "";
-        }
-    }
-
-    /**
-     * Helper method to get the prefix for file operations.
-     * @param targetType target folder or archive folder
-     * @return resolved prefix
-     */
-    private String getPrefix(TargetType targetType) {
-        switch (targetType) {
-            case TARGET:
-                return options.getTargetFilePrefix() == null ? "" : options.getTargetFilePrefix();
-            case ARCHIVE:
-                return options.getArchiveFilePrefix() == null ? "" : options.getArchiveFilePrefix();
-            default:
-                return "";
-        }
+    private FileObject resolveFile(String path) throws FileSystemException {
+        return VFS.getManager().resolveFile(path, fsOptions);
     }
 
     /**
@@ -566,52 +463,4 @@ public class VfsFileTransferUtility {
         MOVE, COPY
     }
 
-
-    /**
-     * Target folder type.
-     */
-    private enum TargetType {
-        TARGET, ARCHIVE
-    }
-
-
-
-    private FileSystemManager initManager() throws FileSystemException {
-        StandardFileSystemManager manager = new StandardFileSystemManager();
-        manager.init();
-
-        return manager;
-    }
-
-
-    abstract static class Retrier<T> {
-
-        public T doWithRetry(int retryCount, int retryWait) throws FileSystemException {
-            boolean retry = false;
-            int retries = 0;
-            T ret = null;
-            do {
-                try {
-                    ret = operation();
-                    retry = false;
-                } catch (FileSystemException e) {
-                    if (retries >= retryCount) {
-                        throw e;
-                    }
-                    retry = true;
-                    retries++;
-                    try {
-                        Thread.sleep(retryWait);
-                    } catch (InterruptedException ignored) {
-                        retry = false;
-                    }
-                }
-            } while (retry);
-
-            return ret;
-        }
-
-        public abstract T operation() throws FileSystemException;
-
-    }
 }

@@ -34,20 +34,4 @@ public class VfsMediatorConfigConstants {
     public static final QName ATT_STREAMING_TRANSFER = new QName(NAMESPACE_STRING, "streamingTransfer");
     public static final QName ATT_STREAMING_BLOCK_SIZE = new QName(NAMESPACE_STRING, "streamingBlockSize");
 
-    public static final QName ELEM_RETRY = new QName(NAMESPACE_STRING, "retry");
-    public static final QName ATT_RETRY_COUNT = new QName("count");
-    public static final QName ATT_RETRY_WAIT = new QName("wait");
-
-    public static final int DEFAULT_RETRY_COUNT = 3;
-    public static final int DEFAULT_RETRY_WAIT = 5000;
-    public static final int DEFAULT_SFTP_TIMEOUT = 30000;
-
-    public static final QName ATT_SFTP_TIMEOUT = new QName(NAMESPACE_STRING, "sftpTimeout");
-
-    public static final QName ELEM_TARGET_FILENAME_PREFIX = new QName(NAMESPACE_STRING, "targetFilenamePrefix");
-    public static final QName ELEM_TARGET_FILENAME_SUFFIX = new QName(NAMESPACE_STRING, "targetFilenameSuffix");
-
-    public static final QName ELEM_ARCHIVE_FILENAME_PREFIX = new QName(NAMESPACE_STRING, "archiveFilenamePrefix");
-    public static final QName ELEM_ARCHIVE_FILENAME_SUFFIX = new QName(NAMESPACE_STRING, "archiveFilenameSuffix");
-
 }

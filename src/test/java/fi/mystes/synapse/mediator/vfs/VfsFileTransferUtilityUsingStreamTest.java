@@ -35,9 +35,9 @@ import static org.mockito.Matchers.startsWith;
 import static org.mockito.Mockito.*;
 
 public class VfsFileTransferUtilityUsingStreamTest {
-    private static final String SOURCE_DIR = "file:///tmp/foo/bar/dir";
-    private static final String TARGET_DIR = "file:///tmp/bar/foo/dir";
-    private static final String ARCHIVE_DIR = "file:///tmp/bar/foo/archive";
+    private static final String SOURCE_DIR = "tmp:///foo/bar/dir";
+    private static final String TARGET_DIR = "tmp:///bar/foo/dir";
+    private static final String ARCHIVE_DIR = "tmp:///bar/foo/archive";
 
     @After
     public void tearDown() throws FileSystemException {

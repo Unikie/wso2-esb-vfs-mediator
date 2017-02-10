@@ -18,7 +18,6 @@ package fi.mystes.synapse.mediator;
 import java.text.MessageFormat;
 import java.util.List;
 
-import fi.mystes.synapse.mediator.config.VfsMediatorConfigConstants;
 import org.apache.axiom.om.OMAttribute;
 import org.apache.axiom.om.OMElement;
 import org.apache.axiom.om.OMText;
@@ -45,29 +44,18 @@ public class VfsMediator extends AbstractMediator {
     private String operationValue;
     private String sourceDirectoryValue;
     private String targetDirectoryValue;
-    private String targetFilenamePrefixValue;
-    private String targetFilenameSuffixValue;
     private String archiveDirectoryValue;
-    private String archiveFilenamePrefixValue;
-    private String archiveFilenameSuffixValue;
     private String filePatternValue;
     private boolean createMissingDirectoriesValue;
     private Boolean lockEnabledValue;
     private boolean streamingTransferValue;
     private String streamingBlockSizeValue;
-    private int retryCount = VfsMediatorConfigConstants.DEFAULT_RETRY_COUNT;
-    private int retryWait = VfsMediatorConfigConstants.DEFAULT_RETRY_WAIT;
-    private Integer sftpTimeoutValue;
 
     private SynapseXPath filePatternXpath;
     private SynapseXPath operationXpath;
     private SynapseXPath sourceDirectoryXpath;
     private SynapseXPath targetDirectoryXpath;
-    private SynapseXPath targetFilenameSuffixXpath;
-    private SynapseXPath targetFilenamePrefixXpath;
     private SynapseXPath archiveDirectoryXpath;
-    private SynapseXPath archiveFilenameSuffixXpath;
-    private SynapseXPath archiveFilenamePrefixXpath;
     private SynapseXPath createMissingDirectoriesXpath;
     private SynapseXPath lockEnabledXpath;
     private SynapseXPath streamingTransferXpath;
@@ -83,7 +71,7 @@ public class VfsMediator extends AbstractMediator {
      * if mediation should continue, or false if further mediation should be
      * aborted.
      *
-     * @param messageContext
+     * @param context
      *            Current message context for mediation
      * @return true if further mediation should continue, otherwise false
      */
@@ -133,42 +121,6 @@ public class VfsMediator extends AbstractMediator {
      */
     public void setTargetDirectoryValue(String targetDirectoryValue) {
         this.targetDirectoryValue = targetDirectoryValue;
-    }
-
-    /**
-     * Sets the filename suffix value for files that are moved or copied to target directory.
-     *
-     * @param value suffix to add to the file names
-     */
-    public void setTargetFilenameSuffixXpath(SynapseXPath value) {
-        this.targetFilenameSuffixXpath = value;
-    }
-
-    /**
-     * Sets the filename prefix value for the files that are moved or copied to target directory.
-     *
-     * @param value prefix to add to the file names
-     */
-    public void setTargetFilenamePrefixXpath(SynapseXPath value) {
-        this.targetFilenamePrefixXpath = value;
-    }
-
-    /**
-     * Gets the filename suffix value.
-     *
-     * @return the suffix value
-     */
-    public SynapseXPath getTargetFilenameSuffixXpath() {
-        return this.targetFilenameSuffixXpath;
-    }
-
-    /**
-     * Gets the filename prefix value
-     *
-     * @return the prefix value
-     */
-    public SynapseXPath getTargetFilenamePrefixXpath() {
-        return this.targetFilenamePrefixXpath;
     }
 
     /**
@@ -235,42 +187,6 @@ public class VfsMediator extends AbstractMediator {
      */
     public String getArchiveDirectoryValue() {
         return archiveDirectoryValue;
-    }
-
-    /**
-     * Sets the suffix value for files that are copied to archive directory.
-     *
-     * @param value the suffix value
-     */
-    public void setArchiveFilenameSuffixXpath(SynapseXPath value) {
-        this.archiveFilenameSuffixXpath = value;
-    }
-
-    /**
-     * Sets the prefix value for files that are copied to archive directory.
-     *
-     * @param value the prefix value
-     */
-    public void setArchiveFilenamePrefixXpath(SynapseXPath value) {
-        this.archiveFilenamePrefixXpath = value;
-    }
-
-    /**
-     * Gets the suffix value of files that are copied to archive directory.
-     *
-     * @return the suffix value
-     */
-    public SynapseXPath getArchiveFilenameSuffixXpath() {
-        return this.archiveFilenameSuffixXpath;
-    }
-
-    /**
-     * Gets the prefix value of file that are copied to archive directory.
-     *
-     * @return the prefix value
-     */
-    public SynapseXPath getArchiveFilenamePrefixXpath() {
-        return this.archiveFilenamePrefixXpath;
     }
 
     /**
@@ -546,28 +462,6 @@ public class VfsMediator extends AbstractMediator {
     }
 
     /**
-     * Setter for SFTP timeout value.
-     *
-     * @param value
-     */
-    public void setSftpTimeoutValue(Integer value) {
-        this.sftpTimeoutValue = value;
-    }
-
-    /**
-     * Getter for SFTP timeout value.
-     *
-     * @return
-     */
-    public Integer getSftpTimeoutValue() {
-        if(this.sftpTimeoutValue == null) {
-            return VfsMediatorConfigConstants.DEFAULT_SFTP_TIMEOUT;
-        }
-
-        return this.sftpTimeoutValue;
-    }
-
-    /**
      * Helper method for operation initiation.
      * 
      * @param messageContext
@@ -598,63 +492,8 @@ public class VfsMediator extends AbstractMediator {
         op.setStreamingBlockSize(resolveStreamingBlockSize(messageContext));
         boolean ftpPassiveMode = isFtpPassiveModeEnabled(messageContext);
         op.setFtpPassiveMode(ftpPassiveMode);
-        op.setRetryCount(this.retryCount);
-        op.setRetryWait(this.retryWait);
-        op.setSftpTimeout(getSftpTimeoutValue());
-        op.setTargetFilePrefix(resolveTargetFilePrefix(messageContext));
-        op.setTargetFileSuffix(resolveTargetFileSuffix(messageContext));
-        op.setArchiveFilePrefix(resolveArchiveFilePrefix(messageContext));
-        op.setArchiveFileSuffix(resolveArchiveFileSuffix(messageContext));
 
         return op;
-    }
-
-    /**
-     * Helper method to resolve target file prefix.
-     * @param messageContext
-     * @return resolved prefix
-     */
-    private String resolveTargetFilePrefix(MessageContext messageContext) {
-        if(targetFilenamePrefixValue != null) return targetFilenamePrefixValue;
-        if(targetFilenamePrefixXpath != null) return resolvePayloadValue(targetFilenamePrefixXpath, messageContext);
-
-        return "";
-    }
-
-    /**
-     * Helper method to resolve target file suffix.
-     * @param messageContext
-     * @return resolved suffix
-     */
-    private String resolveTargetFileSuffix(MessageContext messageContext) {
-        if(targetFilenameSuffixValue != null) return targetFilenameSuffixValue;
-        if(targetFilenameSuffixXpath != null) return resolvePayloadValue(targetFilenameSuffixXpath, messageContext);
-
-        return "";
-    }
-
-    /**
-     * Helper method to resolve archive file prefix.
-     * @param messageContext
-     * @return resolved prefix
-     */
-    private String resolveArchiveFilePrefix(MessageContext messageContext) {
-        if(archiveFilenamePrefixValue != null) return archiveFilenamePrefixValue;
-        if(archiveFilenamePrefixXpath != null) return resolvePayloadValue(archiveFilenamePrefixXpath, messageContext);
-
-        return "";
-    }
-
-    /**
-     * Helper method to resolve archive file suffix.
-     * @param messageContext
-     * @return resolved suffix
-     */
-    private String resolveArchiveFileSuffix(MessageContext messageContext) {
-        if(archiveFilenameSuffixValue != null) return archiveFilenameSuffixValue;
-        if(archiveFilenameSuffixXpath != null) return resolvePayloadValue(archiveFilenameSuffixXpath, messageContext);
-
-        return "";
     }
 
     /**
@@ -806,12 +645,6 @@ public class VfsMediator extends AbstractMediator {
         return lockEnabledValue == null ? DEFAULT_LOCK_ENABLED : lockEnabledValue;
     }
 
-    public String resolveTargetPrefixValue(MessageContext context) {
-        if(targetFilenamePrefixXpath == null) return "";
-
-        return resolvePayloadValue(targetFilenamePrefixXpath, context);
-    }
-
     /**
      * Helper method to resolve file pattern XPath from given message context.
      * 
@@ -877,53 +710,5 @@ public class VfsMediator extends AbstractMediator {
         }
         getLog(messageContext).traceOrDebug("VfsMediator: Resolving resulted in null");
         return null;
-    }
-
-    public int getRetryCount() {
-        return retryCount;
-    }
-
-    public void setRetryCount(int retryCount) {
-        this.retryCount = retryCount;
-    }
-
-    public int getRetryWait() {
-        return retryWait;
-    }
-
-    public void setRetryWait(int retryWait) {
-        this.retryWait = retryWait;
-    }
-
-    public String getTargetFilenamePrefixValue() {
-        return targetFilenamePrefixValue;
-    }
-
-    public void setTargetFilenamePrefixValue(String targetFilenamePrefixValue) {
-        this.targetFilenamePrefixValue = targetFilenamePrefixValue;
-    }
-
-    public String getTargetFilenameSuffixValue() {
-        return targetFilenameSuffixValue;
-    }
-
-    public void setTargetFilenameSuffixValue(String targetFilenameSuffixValue) {
-        this.targetFilenameSuffixValue = targetFilenameSuffixValue;
-    }
-
-    public String getArchiveFilenamePrefixValue() {
-        return archiveFilenamePrefixValue;
-    }
-
-    public void setArchiveFilenamePrefixValue(String archiveFilenamePrefixValue) {
-        this.archiveFilenamePrefixValue = archiveFilenamePrefixValue;
-    }
-
-    public String getArchiveFilenameSuffixValue() {
-        return archiveFilenameSuffixValue;
-    }
-
-    public void setArchiveFilenameSuffixValue(String archiveFilenameSuffixValue) {
-        this.archiveFilenameSuffixValue = archiveFilenameSuffixValue;
     }
 }

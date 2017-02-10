@@ -45,7 +45,7 @@ public class VfsMediatorFactory extends AbstractMediatorFactory {
      * Specific mediator factory implementation to build the
      * org.apache.synapse.Mediator by the given XML configuration
      * 
-     * @param omElement
+     * @param OMElement
      *            element configuration element describing the properties of the
      *            mediator
      * @param properties
@@ -78,115 +78,8 @@ public class VfsMediatorFactory extends AbstractMediatorFactory {
 
         handleStreamingBlockSizeElement(omElement, mediator);
 
-        handleRetryElement(omElement, mediator);
-
-        handleSftpTimeoutElement(omElement, mediator);
-
-        handleTargetFilenamePrefixElement(omElement, mediator);
-
-        handleTargetFilenameSuffixElement(omElement, mediator);
-
-        handleArchiveFilenamePrefixElement(omElement, mediator);
-
-        handleArchiveFilenameSuffixElement(omElement, mediator);
-
         return mediator;
     }
-
-    /**
-     * Retrieves targetFilenamePrefix -element from omElement and configures mediator accordingly.
-     *
-     * @param omElement element to search in
-     * @param mediator mediator to configure
-     */
-    private void handleTargetFilenamePrefixElement(OMElement omElement, VfsMediator mediator) {
-        OMElement elem = omElement.getFirstChildWithName(VfsMediatorConfigConstants.ELEM_TARGET_FILENAME_PREFIX);
-        if(elem == null) return;
-
-        if(elem.getAttributeValue(ATT_VALUE) != null) {
-            mediator.setTargetFilenamePrefixValue(elem.getAttributeValue(ATT_VALUE));
-        } else if(elem.getAttributeValue(ATT_EXPRN) != null) {
-            try {
-                mediator.setTargetFilenamePrefixXpath(SynapseXPathFactory.getSynapseXPath(elem, ATT_EXPRN));
-            } catch (JaxenException e) {
-                handleXpathException(VfsMediatorConfigConstants.ELEM_TARGET_FILENAME_PREFIX, e);
-            }
-        }
-    }
-
-    /**
-     * Retrieves targetFilenameSuffix -element from omElement and configures mediator accordingly.
-     *
-     * @param omElement element to search in
-     * @param mediator mediator to configure
-     */
-    private void handleTargetFilenameSuffixElement(OMElement omElement, VfsMediator mediator) {
-        OMElement elem = omElement.getFirstChildWithName(VfsMediatorConfigConstants.ELEM_TARGET_FILENAME_SUFFIX);
-        if(elem == null) return;
-
-        if(elem.getAttributeValue(ATT_VALUE) != null) {
-            mediator.setTargetFilenameSuffixValue(elem.getAttributeValue(ATT_VALUE));
-        } else if(elem.getAttributeValue(ATT_EXPRN) != null) {
-            try {
-                mediator.setTargetFilenameSuffixXpath(SynapseXPathFactory.getSynapseXPath(elem, ATT_EXPRN));
-            } catch (JaxenException e) {
-                handleXpathException(VfsMediatorConfigConstants.ELEM_TARGET_FILENAME_SUFFIX, e);
-            }
-        }
-    }
-
-    /**
-     * Retrieves archiveFilenamePrefix -element from omElement and configures mediator accordingly.
-     *
-     * @param omElement element to search in
-     * @param mediator mediator to configure
-     */
-    private void handleArchiveFilenamePrefixElement(OMElement omElement, VfsMediator mediator) {
-        OMElement elem = omElement.getFirstChildWithName(VfsMediatorConfigConstants.ELEM_ARCHIVE_FILENAME_PREFIX);
-        if(elem == null) return;
-
-        if(elem.getAttributeValue(ATT_VALUE) != null) {
-            mediator.setArchiveFilenamePrefixValue(elem.getAttributeValue(ATT_VALUE));
-        } else if(elem.getAttributeValue(ATT_EXPRN) != null) {
-            try {
-                mediator.setArchiveFilenamePrefixXpath(SynapseXPathFactory.getSynapseXPath(elem, ATT_EXPRN));
-            } catch (JaxenException e) {
-                handleXpathException(VfsMediatorConfigConstants.ELEM_ARCHIVE_FILENAME_PREFIX, e);
-            }
-        }
-    }
-
-    /**
-     * Retrieves archiveFilenameSuffix -element from omElement and configures mediator accordingly.
-     *
-     * @param omElement element to search in
-     * @param mediator mediator to configure
-     */
-    private void handleArchiveFilenameSuffixElement(OMElement omElement, VfsMediator mediator) {
-        OMElement elem = omElement.getFirstChildWithName(VfsMediatorConfigConstants.ELEM_ARCHIVE_FILENAME_SUFFIX);
-        if(elem == null) return;
-
-        if(elem.getAttributeValue(ATT_VALUE) != null) {
-            mediator.setArchiveFilenameSuffixValue(elem.getAttributeValue(ATT_VALUE));
-        } else if(elem.getAttributeValue(ATT_EXPRN) != null) {
-            try {
-                mediator.setArchiveFilenameSuffixXpath(SynapseXPathFactory.getSynapseXPath(elem, ATT_EXPRN));
-            } catch (JaxenException e) {
-                handleXpathException(VfsMediatorConfigConstants.ELEM_ARCHIVE_FILENAME_SUFFIX, e);
-            }
-        }
-    }
-
-    /**
-     * Helper method for handleException.
-     * Formats the message based on element.
-     * @param element element with exception thrown
-     * @param e exception thrown
-     */
-    private void handleXpathException(QName element, Exception e) {
-        handleException(MessageFormat.format("Invalid XPath expression given to VfsMediator [{0}] element", element), e);
-    }
-
 
     /**
      * Retrieves 'lockEnabled' from given OMElement and sets it to given
@@ -212,27 +105,6 @@ public class VfsMediatorFactory extends AbstractMediatorFactory {
                 String value = lockEnabledElement.getAttributeValue(ATT_VALUE);
                 mediator.setLockEnabledValue(Boolean.valueOf(value));
             }
-        }
-    }
-
-    private void handleRetryElement(OMElement omElement, VfsMediator mediator) {
-        OMElement retryElement = omElement.getFirstChildWithName(VfsMediatorConfigConstants.ELEM_RETRY);
-
-        if(retryElement == null) {
-            mediator.setRetryCount(VfsMediatorConfigConstants.DEFAULT_RETRY_COUNT);
-            mediator.setRetryWait(VfsMediatorConfigConstants.DEFAULT_RETRY_WAIT);
-
-            return;
-        }
-
-        try {
-            int retryCount = Integer.parseInt(retryElement.getAttributeValue(VfsMediatorConfigConstants.ATT_RETRY_COUNT));
-            int retryWait = Integer.parseInt(retryElement.getAttributeValue(VfsMediatorConfigConstants.ATT_RETRY_WAIT));
-
-            mediator.setRetryCount(retryCount);
-            mediator.setRetryWait(retryWait);
-        } catch (Exception e) {
-            handleException("Failed to parse retry count or wait attribute.", e);
         }
     }
 
@@ -477,20 +349,4 @@ public class VfsMediatorFactory extends AbstractMediatorFactory {
         }
     }
 
-    private void handleSftpTimeoutElement(OMElement element, VfsMediator mediator) {
-        OMElement sftpTimeoutElement = element.getFirstChildWithName(VfsMediatorConfigConstants.ATT_SFTP_TIMEOUT);
-
-        if(sftpTimeoutElement == null) return;
-
-        String timeoutValue = sftpTimeoutElement.getAttributeValue(ATT_VALUE);
-
-        if(timeoutValue != null) {
-            try {
-                int valueAsInt = Integer.parseInt(timeoutValue);
-                mediator.setSftpTimeoutValue(valueAsInt);
-            } catch (NumberFormatException e) {
-                handleException("Could not read sftp timeout value from: " + timeoutValue, e);
-            }
-        }
-    }
 }
