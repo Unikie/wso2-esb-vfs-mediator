@@ -140,7 +140,122 @@ public class VfsMediatorSerializer extends AbstractMediatorSerializer {
             element.addChild(lockEnabled);
         }
 
+        if(mediator.getSftpTimeoutValue() != null && mediator.getSftpTimeoutValue() != VfsMediatorConfigConstants.DEFAULT_SFTP_TIMEOUT) {
+            OMElement sftpTimeout = fac.createOMElement(VfsMediatorConfigConstants.ATT_SFTP_TIMEOUT.getLocalPart(), synNS);
+            sftpTimeout.addAttribute(ATT_VALUE, mediator.getSftpTimeoutValue().toString(), nullNS);
+            element.addChild(sftpTimeout);
+        }
+
+        handleRetry(mediator, element);
+
+        handleTargetFilenamePrefixElement(mediator, element);
+        handleTargetFilenameSuffixElement(mediator, element);
+
+        handleArchiveFilenamePrefixElement(mediator, element);
+        handleArchiveFilenameSuffixElement(mediator, element);
+
         return element;
+    }
+
+    private void handleRetry(VfsMediator mediator, OMElement element) {
+        if(mediator.getRetryCount() == VfsMediatorConfigConstants.DEFAULT_RETRY_COUNT &&
+                mediator.getRetryWait() == VfsMediatorConfigConstants.DEFAULT_RETRY_WAIT) {
+            return;
+        }
+
+        OMElement retryElement = fac.createOMElement(VfsMediatorConfigConstants.ELEM_RETRY);
+        retryElement.addAttribute(VfsMediatorConfigConstants.ATT_RETRY_COUNT.getLocalPart(), Integer.toString(mediator.getRetryCount()), nullNS);
+        retryElement.addAttribute(VfsMediatorConfigConstants.ATT_RETRY_WAIT.getLocalPart(), Integer.toString(mediator.getRetryWait()), nullNS);
+
+        element.addChild(retryElement);
+    }
+
+    /**
+     * Handles the serialization of archiveFilenameSuffix -element.
+     *
+     * @param mediator
+     * @param parentElement
+     */
+    private void handleArchiveFilenameSuffixElement(VfsMediator mediator, OMElement parentElement) {
+        if(mediator.getArchiveFilenameSuffixValue() == null && mediator.getArchiveFilenameSuffixXpath() == null) return;
+
+        OMElement elem = fac.createOMElement(VfsMediatorConfigConstants.ELEM_ARCHIVE_FILENAME_SUFFIX.getLocalPart(), synNS);
+
+        if(mediator.getArchiveFilenameSuffixValue() != null) {
+            elem.addAttribute(ATT_VALUE, mediator.getArchiveFilenameSuffixValue(), nullNS);
+        }
+
+        if(mediator.getArchiveFilenameSuffixXpath() != null) {
+            elem.addAttribute(ATT_EXPR, mediator.getArchiveFilenameSuffixXpath().toString(), nullNS);
+        }
+
+        parentElement.addChild(elem);
+    }
+
+    /**
+     * Handles the serialization of archiveFilenamePrefix -element.
+     *
+     * @param mediator
+     * @param parentElement
+     */
+    private void handleArchiveFilenamePrefixElement(VfsMediator mediator, OMElement parentElement) {
+        if(mediator.getArchiveFilenamePrefixValue() == null && mediator.getArchiveFilenamePrefixXpath() == null) return;
+
+        OMElement elem = fac.createOMElement(VfsMediatorConfigConstants.ELEM_ARCHIVE_FILENAME_PREFIX.getLocalPart(), synNS);
+
+        if(mediator.getArchiveFilenamePrefixValue() != null) {
+            elem.addAttribute(ATT_VALUE, mediator.getArchiveFilenamePrefixValue(), nullNS);
+        }
+
+        if(mediator.getArchiveFilenamePrefixXpath() != null) {
+            elem.addAttribute(ATT_EXPR, mediator.getArchiveFilenamePrefixXpath().toString(), nullNS);
+        }
+
+        parentElement.addChild(elem);
+    }
+
+    /**
+     * Handles the serialization of targetFilenamePrefix -element.
+     *
+     * @param mediator
+     * @param parentElement
+     */
+    private void handleTargetFilenamePrefixElement(VfsMediator mediator, OMElement parentElement) {
+        if(mediator.getTargetFilenamePrefixValue() == null && mediator.getTargetFilenamePrefixXpath() == null) return;
+
+        OMElement elem = fac.createOMElement(VfsMediatorConfigConstants.ELEM_TARGET_FILENAME_PREFIX.getLocalPart(), synNS);
+
+        if(mediator.getTargetFilenamePrefixValue() != null) {
+             elem.addAttribute(ATT_VALUE, mediator.getTargetFilenamePrefixValue(), nullNS);
+        }
+
+        if(mediator.getTargetFilenamePrefixXpath() != null) {
+            elem.addAttribute(ATT_EXPR, mediator.getTargetFilenamePrefixXpath().toString(), nullNS);
+        }
+
+        parentElement.addChild(elem);
+    }
+
+    /**
+     * Handles the serialization of targetFilenameSuffix -element.
+     *
+     * @param mediator
+     * @param parentElement
+     */
+    private void handleTargetFilenameSuffixElement(VfsMediator mediator, OMElement parentElement) {
+        if(mediator.getTargetFilenameSuffixValue() == null && mediator.getTargetFilenameSuffixXpath() == null) return;
+
+        OMElement elem = fac.createOMElement(VfsMediatorConfigConstants.ELEM_TARGET_FILENAME_SUFFIX.getLocalPart(), synNS);
+
+        if(mediator.getTargetFilenameSuffixValue() != null) {
+            elem.addAttribute(ATT_VALUE, mediator.getTargetFilenameSuffixValue(), nullNS);
+        }
+
+        if(mediator.getTargetFilenameSuffixXpath() != null) {
+            elem.addAttribute(ATT_EXPR, mediator.getTargetFilenameSuffixXpath().toString(), nullNS);
+        }
+
+        parentElement.addChild(elem);
     }
 
     /**
