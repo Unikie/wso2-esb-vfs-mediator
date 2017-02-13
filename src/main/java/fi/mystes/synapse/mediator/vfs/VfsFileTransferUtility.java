@@ -586,6 +586,8 @@ public class VfsFileTransferUtility {
 
     abstract static class Retrier<T> {
 
+        private static final Log log = LogFactory.getLog(Retrier.class);
+
         public T doWithRetry(int retryCount, int retryWait) throws FileSystemException {
             boolean retry = false;
             int retries = 0;
@@ -595,6 +597,7 @@ public class VfsFileTransferUtility {
                     ret = operation();
                     retry = false;
                 } catch (FileSystemException e) {
+                    log.debug("Connection failed! Retry count: " + retryCount + ", Retry wait: " + retryWait + ", Retries left: " + (retryCount - retries));
                     if (retries >= retryCount) {
                         throw e;
                     }
