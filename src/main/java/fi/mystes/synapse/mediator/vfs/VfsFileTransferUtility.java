@@ -94,7 +94,8 @@ public class VfsFileTransferUtility {
      * @throws FileSystemException
      *             If file listing fails
      */
-    private FileObject[] listFiles(FileSystemManager manager, String sourceDirectoryPath, final String filePatternRegex) throws FileSystemException {
+    private FileObject[] listFiles(final FileSystemManager manager, final String sourceDirectoryPath, final String filePatternRegex) throws FileSystemException {
+
         final FileObject fromDirectory = resolveFile(manager, sourceDirectoryPath);
         FileObject[] fileList = null;
 
@@ -160,13 +161,7 @@ public class VfsFileTransferUtility {
                 lockFilePath = createLockFile(manager, targetPath);
             }
 
-
-            final FileObject newLocation = new Retrier<FileObject>() {
-                @Override
-                public FileObject operation() throws FileSystemException {
-                    return resolveFile(manager, targetPath);
-                }
-            }.doWithRetry(options.getRetryCount(), options.getRetryWait());
+            final FileObject newLocation = resolveFile(manager, targetPath);
 
             try {
                 log.debug(
@@ -302,12 +297,7 @@ public class VfsFileTransferUtility {
                 lockFilePath = createLockFile(manager, targetPath);
             }
 
-            final FileObject newLocation = new Retrier<FileObject>() {
-                @Override
-                public FileObject operation() throws FileSystemException {
-                    return resolveFile(manager, targetPath);
-                }
-            }.doWithRetry(options.getRetryCount(), options.getRetryWait());
+            final FileObject newLocation = resolveFile(manager, targetPath);
 
             try {
                 log.debug(
@@ -351,8 +341,8 @@ public class VfsFileTransferUtility {
      * @throws FileSystemException
      *             If lock file creation fails
      */
-    private String createLockFile(FileSystemManager manager, String targetPath) throws FileSystemException {
-        FileObject lockFile = resolveFile(manager, lockFilePath(targetPath));
+    private String createLockFile(final FileSystemManager manager, final String targetPath) throws FileSystemException {
+        FileObject lockFile = resolveFile(manager, lockFilePath(targetPath));;
         log.debug("About to create lock file: " + fileObjectNameForDebug(lockFile));
         if (lockFile.exists()) {
             throw new FileSystemException(
@@ -440,11 +430,18 @@ public class VfsFileTransferUtility {
      * @throws FileSystemException
      *             If lock file deletion fails
      */
-    private void deleteLockFile(FileSystemManager manager, String lockFilePath) throws FileSystemException {
-        FileObject lockFile = resolveFile(manager, lockFilePath);
-        log.debug("Deleting lock file: " + fileObjectNameForDebug(lockFile));
-        lockFile.delete();
-        lockFile.close();
+    private void deleteLockFile(final FileSystemManager manager, final String lockFilePath) throws FileSystemException {
+        new Retrier<Object>() {
+            @Override
+            public Object operation() throws FileSystemException {
+                FileObject lockFile = resolveFile(manager, lockFilePath);
+                log.debug("Deleting lock file: " + fileObjectNameForDebug(lockFile));
+                lockFile.delete();
+                lockFile.close();
+
+                return null;
+            }
+        }.doWithRetry(options.getRetryCount(), options.getRetryWait());
     }
 
     /**
@@ -523,8 +520,13 @@ public class VfsFileTransferUtility {
      * @throws FileSystemException
      *             If resolving file fails
      */
-    private FileObject resolveFile(FileSystemManager manager, String path) throws FileSystemException {
-        return manager.resolveFile(path, fsOptions);
+    private FileObject resolveFile(final FileSystemManager manager, final String path) throws FileSystemException {
+        return new Retrier<FileObject>() {
+            @Override
+            public FileObject operation() throws FileSystemException {
+                return manager.resolveFile(path, fsOptions);
+            }
+        }.doWithRetry(options.getRetryCount(), options.getRetryWait());
     }
 
     /**
