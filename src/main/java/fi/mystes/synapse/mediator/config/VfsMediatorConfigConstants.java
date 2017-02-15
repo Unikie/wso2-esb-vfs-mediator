@@ -38,8 +38,8 @@ public class VfsMediatorConfigConstants {
     public static final QName ATT_RETRY_COUNT = new QName("count");
     public static final QName ATT_RETRY_WAIT = new QName("wait");
 
-    public static final int DEFAULT_RETRY_COUNT = 3;
-    public static final int DEFAULT_RETRY_WAIT = 5000;
+    public static final int DEFAULT_RETRY_COUNT = 6;
+    public static final int DEFAULT_RETRY_WAIT = 10000;
     public static final int DEFAULT_SFTP_TIMEOUT = 30000;
 
     public static final QName ATT_SFTP_TIMEOUT = new QName(NAMESPACE_STRING, "sftpTimeout");
