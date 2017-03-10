@@ -35,8 +35,8 @@ public class VfsMediatorConfigConstants {
     public static final QName ATT_STREAMING_BLOCK_SIZE = new QName(NAMESPACE_STRING, "streamingBlockSize");
 
     public static final QName ELEM_RETRY = new QName(NAMESPACE_STRING, "retry");
-    public static final QName ATT_RETRY_COUNT = new QName(NAMESPACE_STRING, "count");
-    public static final QName ATT_RETRY_WAIT = new QName(NAMESPACE_STRING, "wait");
+    public static final QName ATT_RETRY_COUNT = new QName("count");
+    public static final QName ATT_RETRY_WAIT = new QName("wait");
 
     public static final int DEFAULT_RETRY_COUNT = 3;
     public static final int DEFAULT_RETRY_WAIT = 5000;
