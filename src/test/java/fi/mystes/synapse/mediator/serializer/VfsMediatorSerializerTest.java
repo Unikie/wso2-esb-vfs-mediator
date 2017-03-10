@@ -192,6 +192,17 @@ public class VfsMediatorSerializerTest {
         assertEquals("valvalval", targetPrefixElement.getAttributeValue(new QName("value")));
     }
 
+    @Test
+    public void serializeWithRetryWaitCountValue() throws Exception {
+        VfsMediatorSerializer serializer = getDefaultSerializer();
+        VfsMediator mediator = getDefaultMediator();
+        mediator.setRetryWait(10);
+        mediator.setRetryCount(6);
+        OMElement element = serializer.serializeSpecificMediator(mediator);
+        OMElement expected = getDocumentElementFromResourcePath("/serializedVfsMediatorWithRetryWaitCountValue.xml");
+        assertEquals(expected.toString(), element.toString());
+    }
+
 
     private VfsMediator getDefaultMediator() {
         VfsMediator mediator = new VfsMediator();
