@@ -163,7 +163,7 @@ public class VfsMediatorSerializer extends AbstractMediatorSerializer {
             return;
         }
 
-        OMElement retryElement = fac.createOMElement(VfsMediatorConfigConstants.ELEM_RETRY);
+        OMElement retryElement = fac.createOMElement(VfsMediatorConfigConstants.ELEM_RETRY.getLocalPart(), synNS);
         retryElement.addAttribute(VfsMediatorConfigConstants.ATT_RETRY_COUNT.getLocalPart(), Integer.toString(mediator.getRetryCount()), nullNS);
         retryElement.addAttribute(VfsMediatorConfigConstants.ATT_RETRY_WAIT.getLocalPart(), Integer.toString(mediator.getRetryWait()), nullNS);
 
