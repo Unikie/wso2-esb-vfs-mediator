@@ -277,6 +277,19 @@ public class VfsMediatorFactoryTest {
         assertEquals("static_value", mediator.getTargetFilenameSuffixValue());
     }
 
+    @Test
+    public void testCreateMediatorWithRetryAttributeValues() throws Exception {
+        OMElement proxy = getDocumentElementFromResourcePath("/vfsMediatorRetryWaitCountVALID.xml");
+        List<OMElement> configs = (List<OMElement>) vfsMediator.evaluate(proxy);
+
+        VfsMediator mediator = (VfsMediator) factory.createMediator(configs.get(0), null);
+
+        assertNotNull(mediator);
+        assertEquals(6, mediator.getRetryCount());
+        assertEquals(10, mediator.getRetryWait());
+
+    }
+
     private static OMElement getDocumentElementFromResourcePath(String path)
             throws FileNotFoundException, XMLStreamException {
         return new StAXOMBuilder(
