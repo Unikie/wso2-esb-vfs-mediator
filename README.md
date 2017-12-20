@@ -39,7 +39,7 @@ You have two options:
 
 a) Add as a Maven/Gradle/Ivy dependency to your project. Get the dependency snippet from [here](https://bintray.com/mystes/maven/wso2-esb-vfs-mediator/view).
 
-b) Download it manually from [here](https://github.com/Mystes/wso2-esb-vfs-mediator/releases/tag/release-1.0).
+b) Download it manually from [here](https://github.com/Mystes/wso2-esb-vfs-mediator/releases/latest).
 
 ### 2. Install the mediator to the ESB
 Copy the `VfsMediator-x.y.jar` to `$WSO2_ESB_HOME/repository/components/dropins/`.
