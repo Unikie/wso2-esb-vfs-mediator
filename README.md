@@ -77,6 +77,6 @@ There are more examples under src/test/resources directory.
 
 * All above + Maven 3.0.X
 
-## [License](LICENSE)
+## [License](LICENSE.txt)
 
-Copyright &copy; 2016 [Mystes Oy](http://www.mystes.fi). Licensed under the [Apache 2.0 License](LICENSE).
+Copyright &copy; 2016 [Mystes Oy](http://www.mystes.fi). Licensed under the [Apache 2.0 License](LICENSE.txt).
