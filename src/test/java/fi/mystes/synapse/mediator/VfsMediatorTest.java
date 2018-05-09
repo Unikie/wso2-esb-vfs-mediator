@@ -291,13 +291,13 @@ public class VfsMediatorTest {
     }
 
     @Test
-    public void mediationDeleagtesWithCorrectValueWhenFtpPassiveModeNotEnabled() throws FileSystemException {
+    public void mediationDelegatesWithCorrectValueWhenFtpPassiveModeNotEnabled() throws FileSystemException {
         assertTrue(mediator.mediate(mc));
         verify(operationDelegate).move(eq(defaultOptions().ftpPassiveModeEnabled(false).build()));
     }
 
     @Test
-    public void mediationDeleagtesWithCorrectValueWhenFtpPassiveModeEnabled() throws FileSystemException {
+    public void mediationDelegatesWithCorrectValueWhenFtpPassiveModeEnabled() throws FileSystemException {
         when(mc.getProperty(VfsMediator.FTP_PASSIVE_MODE_PROPERTY_NAME)).thenReturn("true");
         assertTrue(mediator.mediate(mc));
         verify(operationDelegate).move(eq(defaultOptions().ftpPassiveModeEnabled(true).build()));
