@@ -30,6 +30,7 @@ These options are not specified in mediator configuration as they are applicable
 | Option | File system | Property name | Allowed values | Example |
 | --- | --- | --- | --- | --- |
 | Enable passive mode |	FTP |	vfs.ftp.passiveMode	| true/false (Default: false) | ```<property name="vfs.ftp.passiveMode" value="true"/>``` |
+| Authentication key |	SFTP |	vfs.sftp.authKeyPath	| (any valid local path readable by ESB) | ```<property name="vfs.sftp.authKeyPath" value="/home/wso2/.ssh/custom.key"/>``` |
 
 ## Usage
 

@@ -152,4 +152,10 @@ public interface VfsOperation {
     void setRetryWait(int retryWait);
 
     void setSftpTimeout(int sftpTimeout);
+
+    /**
+     * Sets the path to private key to be used when authenticating to a SFTP endpoint
+     * @param path
+     */
+    void setSftpAuthKeyPath(String path);
 }

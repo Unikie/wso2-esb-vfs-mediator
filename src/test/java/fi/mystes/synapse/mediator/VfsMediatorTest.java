@@ -291,16 +291,38 @@ public class VfsMediatorTest {
     }
 
     @Test
-    public void mediationDeleagtesWithCorrectValueWhenFtpPassiveModeNotEnabled() throws FileSystemException {
+    public void mediationDelegatesWithCorrectValueWhenFtpPassiveModeNotEnabled() throws FileSystemException {
         assertTrue(mediator.mediate(mc));
         verify(operationDelegate).move(eq(defaultOptions().ftpPassiveModeEnabled(false).build()));
     }
 
     @Test
-    public void mediationDeleagtesWithCorrectValueWhenFtpPassiveModeEnabled() throws FileSystemException {
+    public void mediationDelegatesWithCorrectValueWhenFtpPassiveModeEnabled() throws FileSystemException {
         when(mc.getProperty(VfsMediator.FTP_PASSIVE_MODE_PROPERTY_NAME)).thenReturn("true");
         assertTrue(mediator.mediate(mc));
         verify(operationDelegate).move(eq(defaultOptions().ftpPassiveModeEnabled(true).build()));
+    }
+
+    @Test
+    public void mediationDelegatesWithCorrectValueWhenSftpAuthKeyPathIsNotSpecified() throws FileSystemException {
+        assertTrue(mediator.mediate(mc));
+        verify(operationDelegate).move(eq(defaultOptions().sftpAuthKeyPath(null).build()));
+    }
+
+    @Test
+    public void mediationDelegatesWithCorrectValueWhenSftpAuthKeyPathIsEmpty() throws FileSystemException {
+        when(mc.getProperty(VfsMediator.SFTP_AUTH_KEY_PATH_PROPERTY_NAME)).thenReturn("");
+        assertTrue(mediator.mediate(mc));
+        verify(operationDelegate).move(eq(defaultOptions().sftpAuthKeyPath(null).build()));
+    }
+
+    @Test
+    public void mediationDelegatesWithCorrectValueWhenSftpAuthKeyPathIsSpecified() throws FileSystemException {
+        final String keyPath = "/tmp/id_custom.rsa";
+
+        when(mc.getProperty(VfsMediator.SFTP_AUTH_KEY_PATH_PROPERTY_NAME)).thenReturn(keyPath);
+        assertTrue(mediator.mediate(mc));
+        verify(operationDelegate).move(eq(defaultOptions().sftpAuthKeyPath(keyPath).build()));
     }
 
     @Test

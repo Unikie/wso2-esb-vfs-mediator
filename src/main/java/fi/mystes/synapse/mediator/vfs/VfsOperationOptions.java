@@ -35,7 +35,8 @@ public final class VfsOperationOptions {
     private final boolean streamingTransfer;
     private final int retryCount;
     private final int retryWait;
-    private int sftpTimeout;
+    private final int sftpTimeout;
+    private final String sftpAuthKeyPath;
 
     /**
      * Class constructor.
@@ -68,6 +69,8 @@ public final class VfsOperationOptions {
      *            Prefix to use when doing file operations
      * @param targetFileSuffix
      *            Suffix to use when doing file operations
+     * @param sftpAuthKeyPath
+     *            Path to private key to be used in SFTP authentication
      */
     public VfsOperationOptions(String sourceDirectory, String targetDirectory,
                                String filePatternRegex, String archiveDirectory,
@@ -76,7 +79,7 @@ public final class VfsOperationOptions {
                                String streamingBlockSize, int retryCount,
                                int retryWait, int sftpTimeout,
                                String archiveFilePrefix, String archiveFileSuffix,
-                               String targetFilePrefix, String targetFileSuffix) {
+                               String targetFilePrefix, String targetFileSuffix, String sftpAuthKeyPath) {
         this.sourceDirectory = sourceDirectory;
         this.targetDirectory = targetDirectory;
         this.filePatternRegex = filePatternRegex;
@@ -93,6 +96,7 @@ public final class VfsOperationOptions {
         this.archiveFileSuffix = archiveFileSuffix;
         this.targetFilePrefix = targetFilePrefix;
         this.targetFileSuffix = targetFileSuffix;
+        this.sftpAuthKeyPath = sftpAuthKeyPath;
     }
 
     /**
@@ -221,8 +225,13 @@ public final class VfsOperationOptions {
         return this.sftpTimeout;
     }
 
-    public void setSftpTimeout(int sftpTimeout) {
-        this.sftpTimeout = sftpTimeout;
+    /**
+     * Return the path to the private key to use for authenticating to a SFTP endpoint.
+     *
+     * @return Key path
+     */
+    public String getSftpAuthKeyPath() {
+        return this.sftpAuthKeyPath;
     }
 
     /**
@@ -442,6 +451,8 @@ public final class VfsOperationOptions {
          * @return This builder instance
          */
         Builder sftpTimeout(int timeout);
+
+        Builder sftpAuthKeyPath(String path);
     }
 
     /**
@@ -465,13 +476,14 @@ public final class VfsOperationOptions {
         private String archiveFilePrefix;
         private String targetFileSuffix;
         private String targetFilePrefix;
+        private String sftpKeyPath;
 
         @Override
         public VfsOperationOptions build() {
             return new VfsOperationOptions(sourceDirectory, targetDirectory, filePatternRegex, archiveDirectory,
                     createMissingDirectories, lockEnabled, ftpPassiveMode, streamingTransfer, streamingBlockSize,
                     retryCount, retryWait, sftpTimeout, archiveFilePrefix, archiveFileSuffix, targetFilePrefix,
-                    targetFileSuffix);
+                    targetFileSuffix, sftpKeyPath);
         }
 
         @Override
@@ -582,6 +594,13 @@ public final class VfsOperationOptions {
         @Override
         public Builder sftpTimeout(int timeout) {
             this.sftpTimeout = timeout;
+
+            return this;
+        }
+
+        @Override
+        public Builder sftpAuthKeyPath(String path) {
+            this.sftpKeyPath = (path != null && path.trim().length() > 0) ? path : null;
 
             return this;
         }
