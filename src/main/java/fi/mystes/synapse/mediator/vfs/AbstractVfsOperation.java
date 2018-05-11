@@ -36,6 +36,7 @@ public abstract class AbstractVfsOperation implements VfsOperation {
     private int retryCount;
     private int retryWait;
     private int sftpTimeout;
+    private String sftpAuthKeyPath;
 
     private String targetFilePrefix;
     private String targetFileSuffix;
@@ -177,6 +178,10 @@ public abstract class AbstractVfsOperation implements VfsOperation {
         this.sftpTimeout = sftpTimeout;
     }
 
+    @Override
+    public void setSftpAuthKeyPath(String path) {
+        this.sftpAuthKeyPath = path;
+    }
 
     /**
      * Interface method to be implemented by subclasses.
@@ -218,7 +223,7 @@ public abstract class AbstractVfsOperation implements VfsOperation {
                 .ftpPassiveModeEnabled(ftpPassiveMode).streamingTransferEnabled(streamingTransfer)
                 .streamingBlockSize(streamingBlockSize).retryCount(retryCount).retryWait(retryWait).sftpTimeout(sftpTimeout)
                 .targetFilePrefix(targetFilePrefix).targetFileSuffix(targetFileSuffix)
-                .archiveFilePrefix(archiveFilePrefix).archiveFileSuffix(archiveFileSuffix)
+                .archiveFilePrefix(archiveFilePrefix).archiveFileSuffix(archiveFileSuffix).sftpAuthKeyPath(sftpAuthKeyPath)
                 .build();
     }
 }

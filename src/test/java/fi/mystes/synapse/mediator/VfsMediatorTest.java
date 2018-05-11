@@ -304,6 +304,28 @@ public class VfsMediatorTest {
     }
 
     @Test
+    public void mediationDelegatesWithCorrectValueWhenSftpAuthKeyPathIsNotSpecified() throws FileSystemException {
+        assertTrue(mediator.mediate(mc));
+        verify(operationDelegate).move(eq(defaultOptions().sftpAuthKeyPath(null).build()));
+    }
+
+    @Test
+    public void mediationDelegatesWithCorrectValueWhenSftpAuthKeyPathIsEmpty() throws FileSystemException {
+        when(mc.getProperty(VfsMediator.SFTP_AUTH_KEY_PATH_PROPERTY_NAME)).thenReturn("");
+        assertTrue(mediator.mediate(mc));
+        verify(operationDelegate).move(eq(defaultOptions().sftpAuthKeyPath(null).build()));
+    }
+
+    @Test
+    public void mediationDelegatesWithCorrectValueWhenSftpAuthKeyPathIsSpecified() throws FileSystemException {
+        final String keyPath = "/tmp/id_custom.rsa";
+
+        when(mc.getProperty(VfsMediator.SFTP_AUTH_KEY_PATH_PROPERTY_NAME)).thenReturn(keyPath);
+        assertTrue(mediator.mediate(mc));
+        verify(operationDelegate).move(eq(defaultOptions().sftpAuthKeyPath(keyPath).build()));
+    }
+
+    @Test
     public void mediationDelegatesWithCorrectTargetPrefix() throws Exception {
         mediator.setTargetFilenamePrefixXpath(targetFilenamePrefixXpath);
         when(targetFilenamePrefixXpath.evaluate(anyObject())).thenReturn("pref");

@@ -40,6 +40,7 @@ import fi.mystes.synapse.mediator.vfs.VfsOperationDelegate;
  * 
  */
 public class VfsMediator extends AbstractMediator {
+
     private static final boolean DEFAULT_LOCK_ENABLED = true;
 
     private String operationValue;
@@ -74,6 +75,7 @@ public class VfsMediator extends AbstractMediator {
     private SynapseXPath streamingBlockSizeXpath;
     private final static String FILE_COUNT_PROPERTY_NAME = "vfs.fileCount";
     static final String FTP_PASSIVE_MODE_PROPERTY_NAME = "vfs.ftp.passiveMode";
+    static final String SFTP_AUTH_KEY_PATH_PROPERTY_NAME = "vfs.sftp.authKeyPath";
 
     private VfsOperationDelegate delegate = new DefaultVfsOperationDelegate();
 
@@ -605,7 +607,7 @@ public class VfsMediator extends AbstractMediator {
         op.setTargetFileSuffix(resolveTargetFileSuffix(messageContext));
         op.setArchiveFilePrefix(resolveArchiveFilePrefix(messageContext));
         op.setArchiveFileSuffix(resolveArchiveFileSuffix(messageContext));
-
+        op.setSftpAuthKeyPath(resolveSftpAuthKeyPath(messageContext));
         return op;
     }
 
@@ -671,6 +673,12 @@ public class VfsMediator extends AbstractMediator {
         }
 
         return false;
+    }
+
+    private String resolveSftpAuthKeyPath(MessageContext messageContext) {
+        Object property = messageContext.getProperty(SFTP_AUTH_KEY_PATH_PROPERTY_NAME);
+
+        return property == null ? null : property.toString();
     }
 
     /**

@@ -24,6 +24,7 @@ import org.apache.commons.vfs2.provider.sftp.SftpFileSystemConfigBuilder;
 import org.apache.synapse.SynapseException;
 import org.apache.commons.io.FilenameUtils;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -48,7 +49,7 @@ public class VfsFileTransferUtility {
      * @throws NullPointerException
      *             If given VFS operation options instance is not initiated
      */
-    public VfsFileTransferUtility(VfsOperationOptions options) {
+    public VfsFileTransferUtility(VfsOperationOptions options) throws FileSystemException {
         if (options == null) {
             throw new NullPointerException("options cannot be null");
         }
@@ -57,7 +58,11 @@ public class VfsFileTransferUtility {
         if (options.isFtpPassiveModeEnabled()) {
             FtpFileSystemConfigBuilder.getInstance().setPassiveMode(fsOptions, true);
         }
-
+        if(options.getSftpAuthKeyPath() != null) {
+            // note #1: keys with a pass phrase not supported for now
+            // note #2: using deprecated API as WSO2 ESB is using an old version of commons-vfs2
+            SftpFileSystemConfigBuilder.getInstance().setIdentities(fsOptions, new File(options.getSftpAuthKeyPath()));
+        }
         SftpFileSystemConfigBuilder.getInstance().setTimeout(fsOptions, options.getSftpTimeout());
     }
 
