@@ -19,7 +19,7 @@ Vfs Mediator is a custom WSO2 ESB mediator for copy/move file operations. It use
 | **streamingBlockSize** | Integer | This value defines the buffer block size for streaming transfer. The default value is "1024" (bytes). | No |
 | **sftpTimeout** | Integer | Timeout value for SFTP connections | No |
 | **retry** | Integer | `count` attribute for retry count and `wait` attribute for specifying the wait time (in milliseconds) between retries. Defaults to 3 times and 5 seconds. | No |
-| **targetFilenamePrefix** | String | When `value` or `expression` attribute is set, uses it as a filename prefix when copying/moving the file to the target directory. | No | 
+| **targetFilenamePrefix** | String | When `value` or `expression` attribute is set, uses it as a filename prefix when copying/moving the file to the target directory. | No |
 | **targetFilenameSuffix** | String | When `value` or `expression` attribute is set, uses it as a filename suffix when copying/moving the file to the target directory. | No |
 | **archiveFilenamePrefix** | String | When `value` or `expression` attribute is set, uses it as a filename prefix when archiving the file to the archive directory. | No |
 | **archiveFilenameSuffix** | String | When `value` or `expression` attribute is set, uses it as a filename suffix when archiving the file to the archive directory. | No |
@@ -70,9 +70,9 @@ There are more examples under src/test/resources directory.
 
 #### Usage
 
-* Oracle Java 6 & 7
+* Oracle Java 7 & 8
 * WSO2 ESB
-    * Vfs mediator has been tested with WSO2 ESB versions 4.7.0 & 4.8.1
+    * Vfs mediator has been tested with WSO2 ESB versions 4.7.0, 4.8.1 and 5.0.0
 
 #### Development
 
