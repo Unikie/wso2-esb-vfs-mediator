@@ -225,7 +225,7 @@ public final class VfsOperationOptions {
      *
      * @return True/false whether to use user directory as root
      */
-    public boolean isUserDirIsRootEnabled() {
+    public boolean isUserDirIsRoot() {
         return userDirIsRoot;
     }
 

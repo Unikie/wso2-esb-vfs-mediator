@@ -887,11 +887,11 @@ public class VfsMediator extends AbstractMediator {
     }
 
     /**
-     * Helper method indicating whether lock file is enabled.
+     * Helper method indicating whether to use user directory as root.
      *
      * @param messageContext
-     *            Contains lock enabled data
-     * @return True if lock file is enabled, otherwise false
+     *            Contains user directory is root option
+     * @return True if user directory is root, otherwise false
      */
     private boolean resolveUserDirIsRoot(MessageContext messageContext) {
         if (userDirIsRootXpath != null) {
