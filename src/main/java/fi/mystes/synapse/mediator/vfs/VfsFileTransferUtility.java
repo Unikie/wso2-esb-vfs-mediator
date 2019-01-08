@@ -58,6 +58,9 @@ public class VfsFileTransferUtility {
         if (options.isFtpPassiveModeEnabled()) {
             FtpFileSystemConfigBuilder.getInstance().setPassiveMode(fsOptions, true);
         }
+        if (options.isUserDirIsRootEnabled()) {
+            FtpFileSystemConfigBuilder.getInstance().setUserDirIsRoot(fsOptions, true);
+        }
         if(options.getSftpAuthKeyPath() != null) {
             // note #1: keys with a pass phrase not supported for now
             // note #2: using deprecated API as WSO2 ESB is using an old version of commons-vfs2

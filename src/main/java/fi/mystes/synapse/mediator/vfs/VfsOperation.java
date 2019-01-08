@@ -122,6 +122,14 @@ public interface VfsOperation {
     void setStreamingTransfer(boolean streamingTransfer);
 
     /**
+     * Flag indicating whether to use user directory as root.
+     *
+     * @param userDirIsRoot
+     *            True to use user directory as root, false to use path as absolute
+     */
+    void setUserDirIsRoot(boolean userDirIsRoot);
+
+    /**
      * Sets streaming block size.
      *
      * @param streamingBlockSize
