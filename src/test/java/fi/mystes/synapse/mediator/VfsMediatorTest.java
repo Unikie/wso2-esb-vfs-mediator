@@ -73,9 +73,6 @@ public class VfsMediatorTest {
     private SynapseXPath lockEnabledXpath;
 
     @Mock
-    private SynapseXPath userDirIsRootXpath;
-
-    @Mock
     private SynapseXPath targetFilenamePrefixXpath;
 
     @Mock
@@ -111,7 +108,6 @@ public class VfsMediatorTest {
         when(archiveDirectoryXpath.evaluate(anyObject())).thenReturn(ARCHIVE_DIRECTORY);
         when(createMissingDirectoriesXpath.evaluate(anyObject())).thenReturn(String.valueOf(DEFAULT_CREATE_MISSING_DIRECTORIES));
         when(lockEnabledXpath.evaluate(anyObject())).thenReturn(String.valueOf(DEFAULT_LOCK_ENABLED));
-        when(userDirIsRootXpath.evaluate(anyObject())).thenReturn(String.valueOf(DEFAULT_USER_DIR_IS_ROOT));
 
         mediator.setArchiveDirectoryXpath(archiveDirectoryXpath);
         mediator.setSourceDirectoryXpath(sourceDirectoryXpath);
@@ -120,7 +116,6 @@ public class VfsMediatorTest {
         mediator.setFilePatternXpath(filePatternXpath);
         mediator.setCreateMissingDirectoriesXpath(createMissingDirectoriesXpath);
         mediator.setLockEnabledXpath(lockEnabledXpath);
-        mediator.setUserDirIsRootXpath(userDirIsRootXpath);
     }
 
     @Test(expected = NullPointerException.class)
@@ -289,27 +284,11 @@ public class VfsMediatorTest {
     }
 
     @Test
-    public void mediationDelegatesWithCorrectDefaultValueWhenUserDirIsRootFlagNotSpecified() throws JaxenException, FileSystemException {
-        when(userDirIsRootXpath.evaluate(anyObject())).thenReturn(null);
-
-        assertTrue(mediator.mediate(mc));
-        verify(operationDelegate).move(eq(defaultOptions().userDirIsRootEnabled(true).build()));
-    }
-
-    @Test
     public void mediationDelegatesWithCorrectValueWhenLockEnabledFlagSpecified() throws JaxenException, FileSystemException {
         when(lockEnabledXpath.evaluate(anyObject())).thenReturn(String.valueOf("false"));
 
         assertTrue(mediator.mediate(mc));
         verify(operationDelegate).move(eq(defaultOptions().lockEnabled(false).build()));
-    }
-
-    @Test
-    public void mediationDelegatesWithCorrectValueWhenUserDirIsRootFlagSpecified() throws JaxenException, FileSystemException {
-        when(userDirIsRootXpath.evaluate(anyObject())).thenReturn(String.valueOf("false"));
-
-        assertTrue(mediator.mediate(mc));
-        verify(operationDelegate).move(eq(defaultOptions().userDirIsRootEnabled(false).build()));
     }
 
     @Test
@@ -345,6 +324,15 @@ public class VfsMediatorTest {
         when(mc.getProperty(VfsMediator.SFTP_AUTH_KEY_PATH_PROPERTY_NAME)).thenReturn(keyPath);
         assertTrue(mediator.mediate(mc));
         verify(operationDelegate).move(eq(defaultOptions().sftpAuthKeyPath(keyPath).build()));
+    }
+
+    @Test
+    public void mediationDelegatesWithCorrectValueWhenSftpUserDirIsRootIsSpecified() throws FileSystemException {
+        final boolean userDirIsRoot = false;
+
+        when(mc.getProperty(VfsMediator.SFTP_USER_DIR_IS_ROOT_PROPERTY_NAME)).thenReturn(userDirIsRoot);
+        assertTrue(mediator.mediate(mc));
+        verify(operationDelegate).move(eq(defaultOptions().userDirIsRootEnabled(userDirIsRoot).build()));
     }
 
     @Test

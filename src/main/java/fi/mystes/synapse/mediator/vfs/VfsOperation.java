@@ -127,7 +127,7 @@ public interface VfsOperation {
      * @param userDirIsRoot
      *            True to use user directory as root, false to use path as absolute
      */
-    void setUserDirIsRoot(boolean userDirIsRoot);
+    void setUserDirIsRoot(String userDirIsRoot);
 
     /**
      * Sets streaming block size.

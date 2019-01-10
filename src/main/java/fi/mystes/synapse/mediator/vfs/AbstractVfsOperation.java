@@ -33,7 +33,7 @@ public abstract class AbstractVfsOperation implements VfsOperation {
     private boolean streamingTransfer;
     private boolean lockEnabled;
     private boolean ftpPassiveMode;
-    private boolean userDirIsRoot;
+    private String userDirIsRoot;
     private int retryCount;
     private int retryWait;
     private int sftpTimeout;
@@ -168,7 +168,7 @@ public abstract class AbstractVfsOperation implements VfsOperation {
      * Boolean flag indicating whether to use user directory as root
      */
     @Override
-    public void setUserDirIsRoot(boolean userDirIsRoot) {
+    public void setUserDirIsRoot(String userDirIsRoot) {
         this.userDirIsRoot = userDirIsRoot;
     }
 

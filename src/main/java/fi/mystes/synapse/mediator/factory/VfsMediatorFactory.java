@@ -74,8 +74,6 @@ public class VfsMediatorFactory extends AbstractMediatorFactory {
 
         handleLockEnabledElement(omElement, mediator);
 
-        handleUserDirIsRootElement(omElement, mediator);
-
         handleStreamingTransferElement(omElement, mediator);
 
         handleStreamingBlockSizeElement(omElement, mediator);
@@ -213,33 +211,6 @@ public class VfsMediatorFactory extends AbstractMediatorFactory {
             } else {
                 String value = lockEnabledElement.getAttributeValue(ATT_VALUE);
                 mediator.setLockEnabledValue(Boolean.valueOf(value));
-            }
-        }
-    }
-
-    /**
-     * Retrieves 'userDirIsRoot' from given OMElement and sets it to given
-     * mediator.
-     *
-     * @param omElement
-     *            To read 'userDirIsRoot' element from
-     * @param mediator
-     *            To set 'userDirIsRoot' boolean true/false value to
-     */
-    private void handleUserDirIsRootElement(OMElement omElement, VfsMediator mediator) {
-        OMElement userDirIsRootElement = omElement.getFirstChildWithName(VfsMediatorConfigConstants.ATT_USER_DIR_ROOT);
-        if (userDirIsRootElement != null) {
-            if (userDirIsRootElement.getAttributeValue(ATT_EXPRN) != null) {
-                try {
-                    mediator.setUserDirIsRootXpath(SynapseXPathFactory.getSynapseXPath(userDirIsRootElement, ATT_EXPRN));
-                } catch (JaxenException e) {
-                    handleException(MessageFormat.format(
-                            "An invalid xPath expression has been given to a VfsMediator [{0}] element",
-                            VfsMediatorConfigConstants.ATT_USER_DIR_ROOT), e);
-                }
-            } else {
-                String value = userDirIsRootElement.getAttributeValue(ATT_VALUE);
-                mediator.setUserDirIsRootValue(Boolean.valueOf(value));
             }
         }
     }

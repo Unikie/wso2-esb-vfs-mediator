@@ -58,8 +58,9 @@ public class VfsFileTransferUtility {
         if (options.isFtpPassiveModeEnabled()) {
             FtpFileSystemConfigBuilder.getInstance().setPassiveMode(fsOptions, true);
         }
-        if (!options.isUserDirIsRoot()) {
-            FtpFileSystemConfigBuilder.getInstance().setUserDirIsRoot(fsOptions, false);
+
+        if (options.getUserDirIsRootOption() != null) {
+            FtpFileSystemConfigBuilder.getInstance().setUserDirIsRoot(fsOptions, Boolean.getBoolean(options.getUserDirIsRootOption()));
         }
         if(options.getSftpAuthKeyPath() != null) {
             // note #1: keys with a pass phrase not supported for now

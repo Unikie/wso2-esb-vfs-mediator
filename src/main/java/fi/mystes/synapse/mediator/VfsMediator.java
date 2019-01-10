@@ -57,7 +57,6 @@ public class VfsMediator extends AbstractMediator {
     private Boolean lockEnabledValue;
     private boolean streamingTransferValue;
     private String streamingBlockSizeValue;
-    private Boolean userDirIsRootValue;
     private int retryCount = VfsMediatorConfigConstants.DEFAULT_RETRY_COUNT;
     private int retryWait = VfsMediatorConfigConstants.DEFAULT_RETRY_WAIT;
     private Integer sftpTimeoutValue;
@@ -75,10 +74,10 @@ public class VfsMediator extends AbstractMediator {
     private SynapseXPath lockEnabledXpath;
     private SynapseXPath streamingTransferXpath;
     private SynapseXPath streamingBlockSizeXpath;
-    private SynapseXPath userDirIsRootXpath;
     private final static String FILE_COUNT_PROPERTY_NAME = "vfs.fileCount";
     static final String FTP_PASSIVE_MODE_PROPERTY_NAME = "vfs.ftp.passiveMode";
     static final String SFTP_AUTH_KEY_PATH_PROPERTY_NAME = "vfs.sftp.authKeyPath";
+    static final String SFTP_USER_DIR_IS_ROOT_PROPERTY_NAME = "vfs.sftp.userDirIsRoot";
 
     private VfsOperationDelegate delegate = new DefaultVfsOperationDelegate();
 
@@ -551,45 +550,6 @@ public class VfsMediator extends AbstractMediator {
     }
 
     /**
-     * Setter for boolean flag indicating whether to use user directory as root.
-     *
-     * @param userDirIsRootValue
-     *            True to use lock file, otherwise false
-     */
-    public void setUserDirIsRootValue(boolean userDirIsRootValue) {
-        this.userDirIsRootValue = userDirIsRootValue;
-    }
-
-    /**
-     * Getter for boolean flag indicating whether to use user directory as root.
-     *
-     * @return
-     */
-    public Boolean getUserDirIsRootValue() {
-        return userDirIsRootValue;
-    }
-
-    /**
-     * Setter for user directory as root XPath. SynapseXPath possibles reading value either
-     * 'expression' or 'value' attributes.
-     *
-     * @param xpath
-     */
-    public void setUserDirIsRootXpath(SynapseXPath xpath) {
-        this.userDirIsRootXpath = xpath;
-    }
-
-    /**
-     * Getter for user directory as root XPath. SynapseXPath possibles reading value
-     * either 'expression' or 'value' attributes.
-     *
-     * @return
-     */
-    public SynapseXPath getUserDirIsRootXpath() {
-        return this.userDirIsRootXpath;
-    }
-
-    /**
      * Setter for SFTP timeout value.
      *
      * @param value
@@ -893,14 +853,10 @@ public class VfsMediator extends AbstractMediator {
      *            Contains user directory is root option
      * @return True if user directory is root, otherwise false
      */
-    private boolean resolveUserDirIsRoot(MessageContext messageContext) {
-        if (userDirIsRootXpath != null) {
-            String result = resolvePayloadValue(userDirIsRootXpath, messageContext);
-            if (result != null) {
-                return Boolean.valueOf(result);
-            }
-        }
-        return userDirIsRootValue == null ? DEFAULT_USER_DIR_IS_ROOT : userDirIsRootValue;
+    private String resolveUserDirIsRoot(MessageContext messageContext) {
+        Object property = messageContext.getProperty(SFTP_USER_DIR_IS_ROOT_PROPERTY_NAME);
+
+        return property == null ? null : property.toString();
     }
 
     /**

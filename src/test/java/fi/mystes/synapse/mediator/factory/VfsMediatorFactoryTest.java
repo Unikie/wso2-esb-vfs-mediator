@@ -177,16 +177,6 @@ public class VfsMediatorFactoryTest {
     }
 
     @Test
-    public void testCreateMediatorFromValidXMLWhereUserDirIsRootIsValue()
-            throws FileNotFoundException, XMLStreamException, JaxenException {
-        OMElement proxy = getDocumentElementFromResourcePath("/vfsMediatorUserDirIsRootValueVALID.xml");
-        List<OMElement> vfsMediatorConfigs = (List<OMElement>) vfsMediator.evaluate(proxy);
-        VfsMediator m = (VfsMediator) factory.createMediator(vfsMediatorConfigs.get(0), null);
-        assertNotNull(m);
-        assertFalse(m.getUserDirIsRootValue());
-    }
-
-    @Test
     public void testCreateMediatorFromValidXMLWhereLockEnabledIsExpression()
             throws FileNotFoundException, XMLStreamException, JaxenException {
         OMElement proxy = getDocumentElementFromResourcePath("/vfsMediatorLockEnabledExpressionVALID.xml");

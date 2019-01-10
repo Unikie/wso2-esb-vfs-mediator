@@ -33,7 +33,7 @@ public final class VfsOperationOptions {
     private final boolean lockEnabled;
     private final boolean ftpPassiveMode;
     private final boolean streamingTransfer;
-    private final boolean userDirIsRoot;
+    private final String userDirIsRoot;
     private final int retryCount;
     private final int retryWait;
     private final int sftpTimeout;
@@ -78,7 +78,7 @@ public final class VfsOperationOptions {
     public VfsOperationOptions(String sourceDirectory, String targetDirectory,
                                String filePatternRegex, String archiveDirectory,
                                boolean createMissingDirectories, boolean lockEnabled,
-                               boolean ftpPassiveMode, boolean streamingTransfer, boolean userDirIsRoot,
+                               boolean ftpPassiveMode, boolean streamingTransfer, String userDirIsRoot,
                                String streamingBlockSize, int retryCount,
                                int retryWait, int sftpTimeout,
                                String archiveFilePrefix, String archiveFileSuffix,
@@ -225,8 +225,8 @@ public final class VfsOperationOptions {
      *
      * @return True/false whether to use user directory as root
      */
-    public boolean isUserDirIsRoot() {
-        return userDirIsRoot;
+    public String getUserDirIsRootOption() {
+        return this.userDirIsRoot;
     }
 
     /**
@@ -278,8 +278,6 @@ public final class VfsOperationOptions {
             return false;
         if (streamingTransfer != that.streamingTransfer)
             return false;
-        if (userDirIsRoot != that.userDirIsRoot)
-            return false;
         if (sourceDirectory != null ? !sourceDirectory.equals(that.sourceDirectory) : that.sourceDirectory != null)
             return false;
         if (targetDirectory != null ? !targetDirectory.equals(that.targetDirectory) : that.targetDirectory != null)
@@ -317,7 +315,6 @@ public final class VfsOperationOptions {
         result = 31 * result + (lockEnabled ? 1 : 0);
         result = 31 * result + (ftpPassiveMode ? 1 : 0);
         result = 31 * result + (streamingTransfer ? 1 : 0);
-        result = 31 * result + (userDirIsRoot ? 1 : 0);
         return result;
     }
 
@@ -443,7 +440,7 @@ public final class VfsOperationOptions {
          *            Boolean value indicating whether to use user directory as root
          * @return This builder instance
          */
-        Builder userDirIsRootEnabled(boolean userDirIsRoot);
+        Builder userDirIsRootEnabled(String userDirIsRoot);
 
         /**
          * Setter for block size of streaming transfer.
@@ -494,7 +491,7 @@ public final class VfsOperationOptions {
         private boolean lockEnabled;
         private boolean ftpPassiveMode;
         private boolean streamingTransfer;
-        private boolean userDirIsRoot;
+        private String userDirIsRoot;
         private int retryCount;
         private int retryWait;
         private int sftpTimeout;
@@ -618,7 +615,7 @@ public final class VfsOperationOptions {
         }
 
         @Override
-        public Builder userDirIsRootEnabled(boolean userDirIsRoot) {
+        public Builder userDirIsRootEnabled(String userDirIsRoot) {
             this.userDirIsRoot = userDirIsRoot;
 
             return this;
