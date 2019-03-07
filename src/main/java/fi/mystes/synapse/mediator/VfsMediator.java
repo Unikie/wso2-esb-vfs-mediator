@@ -42,7 +42,6 @@ import fi.mystes.synapse.mediator.vfs.VfsOperationDelegate;
 public class VfsMediator extends AbstractMediator {
 
     private static final boolean DEFAULT_LOCK_ENABLED = true;
-    private static final boolean DEFAULT_USER_DIR_IS_ROOT = true;
 
     private String operationValue;
     private String sourceDirectoryValue;
@@ -850,8 +849,8 @@ public class VfsMediator extends AbstractMediator {
      * Helper method indicating whether to use user directory as root.
      *
      * @param messageContext
-     *            Contains user directory is root option
-     * @return True if user directory is root, otherwise false
+     *            Property contains user directory is root option as boolean string
+     * @return value of property vfs.sftp.userDirIsRoot
      */
     private String resolveUserDirIsRoot(MessageContext messageContext) {
         Object property = messageContext.getProperty(SFTP_USER_DIR_IS_ROOT_PROPERTY_NAME);

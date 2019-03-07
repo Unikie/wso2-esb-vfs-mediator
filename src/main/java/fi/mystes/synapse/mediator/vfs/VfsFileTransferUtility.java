@@ -60,7 +60,9 @@ public class VfsFileTransferUtility {
         }
 
         if (options.getUserDirIsRootOption() != null) {
-            FtpFileSystemConfigBuilder.getInstance().setUserDirIsRoot(fsOptions, Boolean.getBoolean(options.getUserDirIsRootOption()));
+            log.debug("Setting SFTP UserDirIsRoot option to: " + Boolean.getBoolean(options.getUserDirIsRootOption()));
+            FtpFileSystemConfigBuilder.getInstance().setUserDirIsRoot(fsOptions, false);
+            SftpFileSystemConfigBuilder.getInstance().setUserDirIsRoot(fsOptions, false);
         }
         if(options.getSftpAuthKeyPath() != null) {
             // note #1: keys with a pass phrase not supported for now

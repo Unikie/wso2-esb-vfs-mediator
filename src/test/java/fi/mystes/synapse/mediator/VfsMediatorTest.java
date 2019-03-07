@@ -49,7 +49,6 @@ public class VfsMediatorTest {
     private static final boolean DEFAULT_LOCK_ENABLED = true;
     private static final boolean DEFAULT_FTP_PASSIVE_MODE_ENABLED = false;
     private static final String DEFAULT_PREFIX_SUFFIX = "";
-    private static final boolean DEFAULT_USER_DIR_IS_ROOT = true;
 
     @Mock
     private SynapseXPath filePatternXpath;
@@ -332,7 +331,7 @@ public class VfsMediatorTest {
 
         when(mc.getProperty(VfsMediator.SFTP_USER_DIR_IS_ROOT_PROPERTY_NAME)).thenReturn(userDirIsRoot);
         assertTrue(mediator.mediate(mc));
-        verify(operationDelegate).move(eq(defaultOptions().userDirIsRootEnabled(userDirIsRoot).build()));
+        verify(operationDelegate).move(eq(defaultOptions().userDirIsRootEnabled("false").build()));
     }
 
     @Test
@@ -376,7 +375,6 @@ public class VfsMediatorTest {
                 .archiveDirectory(ARCHIVE_DIRECTORY)
                 .createMissingDirectories(DEFAULT_CREATE_MISSING_DIRECTORIES)
                 .lockEnabled(DEFAULT_LOCK_ENABLED)
-                .userDirIsRootEnabled(DEFAULT_USER_DIR_IS_ROOT)
                 .ftpPassiveModeEnabled(DEFAULT_FTP_PASSIVE_MODE_ENABLED)
                 .targetFilePrefix(DEFAULT_PREFIX_SUFFIX)
                 .targetFileSuffix(DEFAULT_PREFIX_SUFFIX)
