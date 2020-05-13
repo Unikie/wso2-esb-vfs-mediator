@@ -33,6 +33,7 @@ public class VfsMediatorConfigConstants {
     public static final QName ATT_LOCK_ENABLED = new QName(NAMESPACE_STRING, "lockEnabled");
     public static final QName ATT_STREAMING_TRANSFER = new QName(NAMESPACE_STRING, "streamingTransfer");
     public static final QName ATT_STREAMING_BLOCK_SIZE = new QName(NAMESPACE_STRING, "streamingBlockSize");
+    public static final QName ATT_USER_DIR_ROOT = new QName(NAMESPACE_STRING, "userDirIsRoot");
 
     public static final QName ELEM_RETRY = new QName(NAMESPACE_STRING, "retry");
     public static final QName ATT_RETRY_COUNT = new QName("count");

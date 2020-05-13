@@ -33,6 +33,7 @@ public abstract class AbstractVfsOperation implements VfsOperation {
     private boolean streamingTransfer;
     private boolean lockEnabled;
     private boolean ftpPassiveMode;
+    private String userDirIsRoot;
     private int retryCount;
     private int retryWait;
     private int sftpTimeout;
@@ -163,6 +164,14 @@ public abstract class AbstractVfsOperation implements VfsOperation {
         this.ftpPassiveMode = ftpPassiveMode;
     }
 
+    /**
+     * Boolean flag indicating whether to use user directory as root
+     */
+    @Override
+    public void setUserDirIsRoot(String userDirIsRoot) {
+        this.userDirIsRoot = userDirIsRoot;
+    }
+
     @Override
     public void setRetryCount(int retryCount) {
         this.retryCount = retryCount;
@@ -220,7 +229,7 @@ public abstract class AbstractVfsOperation implements VfsOperation {
         return VfsOperationOptions.with().sourceDirectory(sourceDirectory).targetDirectory(targetDirectory)
                 .filePatternRegex(filePattern).archiveDirectory(archiveDirectory)
                 .createMissingDirectories(createMissingDirectories).lockEnabled(lockEnabled)
-                .ftpPassiveModeEnabled(ftpPassiveMode).streamingTransferEnabled(streamingTransfer)
+                .ftpPassiveModeEnabled(ftpPassiveMode).userDirIsRootEnabled(userDirIsRoot).streamingTransferEnabled(streamingTransfer)
                 .streamingBlockSize(streamingBlockSize).retryCount(retryCount).retryWait(retryWait).sftpTimeout(sftpTimeout)
                 .targetFilePrefix(targetFilePrefix).targetFileSuffix(targetFileSuffix)
                 .archiveFilePrefix(archiveFilePrefix).archiveFileSuffix(archiveFileSuffix).sftpAuthKeyPath(sftpAuthKeyPath)

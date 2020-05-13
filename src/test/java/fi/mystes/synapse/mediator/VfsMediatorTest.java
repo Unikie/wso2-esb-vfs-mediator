@@ -326,6 +326,15 @@ public class VfsMediatorTest {
     }
 
     @Test
+    public void mediationDelegatesWithCorrectValueWhenSftpUserDirIsRootIsSpecified() throws FileSystemException {
+        final boolean userDirIsRoot = false;
+
+        when(mc.getProperty(VfsMediator.SFTP_USER_DIR_IS_ROOT_PROPERTY_NAME)).thenReturn(userDirIsRoot);
+        assertTrue(mediator.mediate(mc));
+        verify(operationDelegate).move(eq(defaultOptions().userDirIsRootEnabled("false").build()));
+    }
+
+    @Test
     public void mediationDelegatesWithCorrectTargetPrefix() throws Exception {
         mediator.setTargetFilenamePrefixXpath(targetFilenamePrefixXpath);
         when(targetFilenamePrefixXpath.evaluate(anyObject())).thenReturn("pref");

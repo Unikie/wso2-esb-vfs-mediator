@@ -33,6 +33,7 @@ public final class VfsOperationOptions {
     private final boolean lockEnabled;
     private final boolean ftpPassiveMode;
     private final boolean streamingTransfer;
+    private final String userDirIsRoot;
     private final int retryCount;
     private final int retryWait;
     private final int sftpTimeout;
@@ -59,6 +60,8 @@ public final class VfsOperationOptions {
      *            passive mode
      * @param streamingTransfer
      *            Boolean flag indicating whether file transfer use streaming
+     * @param userDirIsRoot
+     *            Boolean flag indicating whether to use user directory as root
      * @param streamingBlockSize
      *            Block size used with streaming transfer
      * @param archiveFilePrefix
@@ -75,7 +78,7 @@ public final class VfsOperationOptions {
     public VfsOperationOptions(String sourceDirectory, String targetDirectory,
                                String filePatternRegex, String archiveDirectory,
                                boolean createMissingDirectories, boolean lockEnabled,
-                               boolean ftpPassiveMode, boolean streamingTransfer,
+                               boolean ftpPassiveMode, boolean streamingTransfer, String userDirIsRoot,
                                String streamingBlockSize, int retryCount,
                                int retryWait, int sftpTimeout,
                                String archiveFilePrefix, String archiveFileSuffix,
@@ -88,6 +91,7 @@ public final class VfsOperationOptions {
         this.lockEnabled = lockEnabled;
         this.ftpPassiveMode = ftpPassiveMode;
         this.streamingTransfer = streamingTransfer;
+        this.userDirIsRoot = userDirIsRoot;
         this.streamingBlockSize = streamingBlockSize;
         this.retryCount = retryCount;
         this.retryWait = retryWait;
@@ -214,6 +218,15 @@ public final class VfsOperationOptions {
      */
     public boolean isStreamingTransferEnabled() {
         return streamingTransfer;
+    }
+
+    /**
+     * Returns boolean flag indicating whether to use user directory as root.
+     *
+     * @return True/false whether to use user directory as root
+     */
+    public String getUserDirIsRootOption() {
+        return this.userDirIsRoot;
     }
 
     /**
@@ -421,6 +434,15 @@ public final class VfsOperationOptions {
         Builder streamingTransferEnabled(boolean streamingTransfer);
 
         /**
+         * Setter for boolean flag whether to use user directory as root.
+         *
+         * @param userDirIsRoot
+         *            Boolean value indicating whether to use user directory as root
+         * @return This builder instance
+         */
+        Builder userDirIsRootEnabled(String userDirIsRoot);
+
+        /**
          * Setter for block size of streaming transfer.
          *
          * @param streamingBlockSize
@@ -469,6 +491,7 @@ public final class VfsOperationOptions {
         private boolean lockEnabled;
         private boolean ftpPassiveMode;
         private boolean streamingTransfer;
+        private String userDirIsRoot;
         private int retryCount;
         private int retryWait;
         private int sftpTimeout;
@@ -481,9 +504,9 @@ public final class VfsOperationOptions {
         @Override
         public VfsOperationOptions build() {
             return new VfsOperationOptions(sourceDirectory, targetDirectory, filePatternRegex, archiveDirectory,
-                    createMissingDirectories, lockEnabled, ftpPassiveMode, streamingTransfer, streamingBlockSize,
-                    retryCount, retryWait, sftpTimeout, archiveFilePrefix, archiveFileSuffix, targetFilePrefix,
-                    targetFileSuffix, sftpKeyPath);
+                    createMissingDirectories, lockEnabled, ftpPassiveMode, streamingTransfer, userDirIsRoot,
+                    streamingBlockSize, retryCount, retryWait, sftpTimeout, archiveFilePrefix, archiveFileSuffix,
+                    targetFilePrefix, targetFileSuffix, sftpKeyPath);
         }
 
         @Override
@@ -587,6 +610,13 @@ public final class VfsOperationOptions {
         @Override
         public Builder streamingTransferEnabled(boolean streamingTransfer) {
             this.streamingTransfer = streamingTransfer;
+
+            return this;
+        }
+
+        @Override
+        public Builder userDirIsRootEnabled(String userDirIsRoot) {
+            this.userDirIsRoot = userDirIsRoot;
 
             return this;
         }

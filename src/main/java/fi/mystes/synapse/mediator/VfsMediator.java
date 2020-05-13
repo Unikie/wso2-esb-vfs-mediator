@@ -76,6 +76,7 @@ public class VfsMediator extends AbstractMediator {
     private final static String FILE_COUNT_PROPERTY_NAME = "vfs.fileCount";
     static final String FTP_PASSIVE_MODE_PROPERTY_NAME = "vfs.ftp.passiveMode";
     static final String SFTP_AUTH_KEY_PATH_PROPERTY_NAME = "vfs.sftp.authKeyPath";
+    static final String SFTP_USER_DIR_IS_ROOT_PROPERTY_NAME = "vfs.sftp.userDirIsRoot";
 
     private VfsOperationDelegate delegate = new DefaultVfsOperationDelegate();
 
@@ -598,6 +599,7 @@ public class VfsMediator extends AbstractMediator {
         op.setLockEnabled(resolveLockEnabled(messageContext));
         op.setStreamingTransfer(resolveStreamingTransfer(messageContext));
         op.setStreamingBlockSize(resolveStreamingBlockSize(messageContext));
+        op.setUserDirIsRoot(resolveUserDirIsRoot(messageContext));
         boolean ftpPassiveMode = isFtpPassiveModeEnabled(messageContext);
         op.setFtpPassiveMode(ftpPassiveMode);
         op.setRetryCount(this.retryCount);
@@ -841,6 +843,19 @@ public class VfsMediator extends AbstractMediator {
             handleException(errorString, messageContext);
         }
         return null;
+    }
+
+    /**
+     * Helper method indicating whether to use user directory as root.
+     *
+     * @param messageContext
+     *            Property contains user directory is root option as boolean string
+     * @return value of property vfs.sftp.userDirIsRoot
+     */
+    private String resolveUserDirIsRoot(MessageContext messageContext) {
+        Object property = messageContext.getProperty(SFTP_USER_DIR_IS_ROOT_PROPERTY_NAME);
+
+        return property == null ? null : property.toString();
     }
 
     /**
